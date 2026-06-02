@@ -1,23 +1,26 @@
 #!/usr/bin/env bash
 # recommend-effort.sh — UserPromptExpansion hook.
 #
-# Nudges the user toward `/effort ultracode` exactly once per session, and only
-# when one of THIS plugin's slash commands is invoked while session effort is
-# below xhigh. A hook can RECOMMEND effort, never SET it; ultracode reports as
-# xhigh everywhere a hook can read it, so this gate is best-effort by design.
+# Nudges the user toward `/effort ultracode` exactly once per session whenever
+# one of THIS plugin's slash commands is typed. A hook can RECOMMEND effort,
+# never SET it. NOTE: we do NOT gate on the current effort tier — a live capture
+# (2026-06-02) confirmed $CLAUDE_EFFORT is NOT passed to a UserPromptExpansion
+# hook (unset in the hook env even when the session was at `high`), so there is
+# no reliable way to read it here. We nudge once per session and word the message
+# so it never asserts the current tier.
 #
 # Why UserPromptExpansion (not PreToolUse): it is the only documented event that
 # fires on the user-typed `/command` path AND carries command identity
 # (command_name, command_source). Direct `/skillname` typing BYPASSES PreToolUse
 # (hooks.md), so a PreToolUse plan would miss the main path.
 #
-# THREE RUNTIME-UNCONFIRMED BEHAVIORS (doc-unconfirmed; this hook FAILS SAFE =
-# do-not-nudge if any is false; enable CC_ARCH_HOOK_DEBUG=1 to capture them on
-# first fire):
-#   1. $CLAUDE_EFFORT is actually populated for a UserPromptExpansion hook.
-#   2. A non-blocking `systemMessage` JSON field renders for this event.
-#   3. Whether plugin command_name arrives BARE (e.g. "commit") or NAMESPACED
-#      (e.g. "claude-code-onboard:commit"); we match both forms.
+# RUNTIME FINDINGS (live capture 2026-06-02 via CC_ARCH_HOOK_DEBUG=1):
+#   1. $CLAUDE_EFFORT is NOT populated for a UserPromptExpansion hook (CONFIRMED
+#      unset) — so we no longer gate on it; we nudge once per session instead.
+#   2. Whether a non-blocking `systemMessage` renders for this event is STILL
+#      unverified; CC_ARCH_HOOK_DEBUG=1 keeps logging each fire so it can be seen.
+#   3. CONFIRMED: command_name arrives BARE in project form (e.g. "legacy-hello")
+#      and command_source as "projectSettings"; we normalize bare/namespaced both.
 #
 # Output contract: emit a ONE-TIME nudge via the universal `systemMessage` JSON
 # field ONLY. `additionalContext` IS supported on this event (per the hooks
@@ -85,24 +88,17 @@ done
 # Not one of our commands → silently do nothing.
 [ "$matched" -eq 1 ] || exit 0
 
-# LOOSE command_source check: accept plugin (once packaged) OR project/local
-# (this dogfooding repo). Do NOT hard-require "plugin". Only reject a source we
-# explicitly recognize as foreign; unknown/empty sources pass (fail-open on
-# identity since the matcher already scoped us).
-case "$command_source" in
-  plugin|project|local|""|user) : ;;   # accepted
-  *) exit 0 ;;                          # some other recognized origin → skip
-esac
+# command_source is INFORMATIONAL ONLY: the command_name matcher above already
+# scoped us to THIS plugin's commands. We accept ALL sources (fail-open, per the
+# original stated intent). A previous version rejected unknown sources with
+# `*) exit 0`, which silently killed the nudge when the runtime sent the real
+# project-form value "projectSettings" — the bug this fix removes. (The value is
+# still captured in the debug log above for the record.)
 
-# --- (2) Gate on the $CLAUDE_EFFORT env var (NOT effort.level) --------------
-# Fail-safe: if effort is already xhigh/max, or is unset/empty (can't tell),
-# do NOT nudge. We only nudge when effort is a KNOWN lower tier.
-effort="${CLAUDE_EFFORT:-}"
-case "$effort" in
-  xhigh|max|"") exit 0 ;;               # already elevated or unknown → no nudge
-  low|medium|high) : ;;                 # known lower tier → eligible to nudge
-  *) exit 0 ;;                          # unrecognized value → fail safe
-esac
+# --- (2) NO effort gate -----------------------------------------------------
+# $CLAUDE_EFFORT is not exposed to this event (see RUNTIME FINDINGS above), so
+# there is nothing reliable to gate on. We nudge once per session regardless of
+# tier; the message (below) is worded so it never asserts the current effort.
 
 # --- (3) Once-per-session marker -------------------------------------------
 # CLAUDE_PLUGIN_DATA is persistent/per-plugin once packaged; fall back to TMPDIR
@@ -119,7 +115,7 @@ fi
 ( : > "$marker" ) 2>/dev/null || true
 
 # --- (4) Emit the one-time nudge via systemMessage ONLY ---------------------
-msg="Tip: you invoked a heavy /${norm} command at effort '${effort}'. For the deepest reasoning, run '/effort ultracode' (or '/effort xhigh') for this work. (Shown once per session.)"
+msg="Tip: you invoked a heavy /${norm} command. For the deepest reasoning, consider running '/effort ultracode' (or '/effort xhigh') for this work. (Shown once per session.)"
 
 if command -v jq >/dev/null 2>&1; then
   jq -n --arg msg "$msg" '{systemMessage: $msg}'
