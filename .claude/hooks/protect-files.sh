@@ -45,15 +45,20 @@ fi
 base="$(basename -- "$file_path")"
 
 # Protected patterns (per spec §5.5):
-#   .env*                     — secrets / local env files at any depth
-#   package-lock.json         — lockfile is owned by the package manager
-#   .git/                     — internal git state
-#   migrations/               — applied DB migrations are immutable history
-#   .claude/.adopt-backups/   — adoption-engine snapshots must not be clobbered
+#   .env*                                       — secrets / local env files at any depth
+#   package-lock.json / pnpm-lock.yaml / yarn.lock — lockfiles owned by the package manager
+#   .git/                                       — internal git state
+#   migrations/                                 — applied DB migrations are immutable history
+#   .claude/.adopt-backups/                     — adoption-engine snapshots must not be clobbered
+#
+# Lockfiles are matched on the BASENAME, so the guard holds at any depth — important in a
+# monorepo where each workspace package may carry its own lockfile.
 reason=""
 case "$base" in
   .env|.env.*) reason="'.env' files hold secrets and are never editable by tools." ;;
   package-lock.json) reason="package-lock.json is managed by npm — run 'npm install' instead of hand-editing." ;;
+  pnpm-lock.yaml) reason="pnpm-lock.yaml is managed by pnpm — run 'pnpm install' instead of hand-editing." ;;
+  yarn.lock) reason="yarn.lock is managed by yarn — run 'yarn install' instead of hand-editing." ;;
 esac
 
 if [ -z "$reason" ]; then

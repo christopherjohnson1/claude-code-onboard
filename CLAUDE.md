@@ -70,3 +70,8 @@ companion to this file, always loaded). API-specific conventions live in
 - **Permission syntax is space-sensitive:** `Bash(npm run test:*)` is not the same as
   `Bash(npm run test*)`. See the README permissions section before editing
   `settings.json`.
+- **`settings.json` is not inherited like `CLAUDE.md`.** A root `.claude/settings.json` —
+  its permission denies and its `$CLAUDE_PROJECT_DIR`-wired hooks — applies only when Claude
+  is started from the repo root. In a monorepo, launching inside a package silently drops
+  those guards; start from the root or use managed settings. See the README's
+  "Large codebases & monorepos" section.

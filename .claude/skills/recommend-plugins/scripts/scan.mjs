@@ -3,16 +3,27 @@
 //
 // PURE READ-ONLY. NO network. NO install. NO writes. Reads a handful of files
 // and prints a single JSON object to stdout describing detected "signals", the
-// evidence paths behind each signal, and the set of already-installed plugins.
+// evidence paths behind each signal, the repo's workspace structure, and the set
+// of already-installed plugins.
 //
 // Every signal name emitted here MUST be a key of plugins-catalog.json's
 // "signalIndex" — that is the authoritative vocabulary the SKILL.md workflow
-// reverse-indexes against. Do not invent signals outside that set.
+// reverse-indexes against. Do not invent signals outside that set. Monorepo
+// structure is therefore reported on a SEPARATE `structure` field, NOT as a
+// signal, precisely so the signal vocabulary stays a subset of signalIndex.
+//
+// MONOREPO AWARENESS: the per-manifest detectors take a directory argument, so
+// the scanner runs them at the repo root AND at each workspace package root
+// (npm/yarn/bun `workspaces`, pnpm-workspace.yaml, lerna.json, nx.json,
+// turbo.json). A depth-3 walk is a safety net for non-standard layouts. Without
+// this, a monorepo whose root package.json only carries a `workspaces` field
+// would surface ~node/typescript and miss every package's real stack.
 //
 // Output shape (stdout):
 //   {
 //     "signals": ["typescript", "node", "postgres", ...],   // sorted, deduped
-//     "evidence": { "postgres": ["package.json", "prisma/schema.prisma"], ... },
+//     "evidence": { "postgres": ["packages/api/package.json", ...], ... },
+//     "structure": { "isMonorepo": true, "tool": "pnpm", "workspaceRoots": [...] },
 //     "alreadyInstalled": ["github@claude-plugins-official", ...]
 //   }
 //
@@ -52,8 +63,10 @@ const EXCLUDED_DIRS = new Set([
 const evidence = new Map();
 
 /**
- * Record that `signal` was detected, with `evidencePath` (repo-relative) as
- * supporting evidence.
+ * Record that `signal` was detected, with `evidencePath` (absolute or
+ * repo-relative) as supporting evidence. Evidence is normalized to a
+ * repo-relative POSIX path so per-package manifests cite e.g.
+ * "packages/api/package.json", not a bare "package.json".
  * @param {string} signal
  * @param {string} evidencePath
  */
@@ -238,7 +251,7 @@ const DEP_SIGNAL_RULES = [
 
 /**
  * Apply DEP_SIGNAL_RULES to a list of dependency names, attributing evidence to
- * `manifestPath`.
+ * `manifestPath` (absolute or repo-relative — normalized by addSignal).
  * @param {string[]} depNames
  * @param {string} manifestPath
  */
@@ -252,12 +265,12 @@ function mapDepsToSignals(depNames, manifestPath) {
   }
 }
 
-function scanPackageJson() {
-  const p = path.join(repoRoot, "package.json");
+function scanPackageJson(dir) {
+  const p = path.join(dir, "package.json");
   const pkg = readJson(p);
   if (!pkg) return;
   // Node + TypeScript baseline signals.
-  addSignal("node", "package.json");
+  addSignal("node", p);
   const deps = {
     ...(pkg.dependencies || {}),
     ...(pkg.devDependencies || {}),
@@ -265,55 +278,50 @@ function scanPackageJson() {
     ...(pkg.optionalDependencies || {}),
   };
   const names = Object.keys(deps);
-  if (
-    names.includes("typescript") ||
-    exists(path.join(repoRoot, "tsconfig.json"))
-  ) {
-    addSignal("typescript", "package.json");
+  if (names.includes("typescript") || exists(path.join(dir, "tsconfig.json"))) {
+    addSignal("typescript", p);
   }
-  mapDepsToSignals(names, "package.json");
+  mapDepsToSignals(names, p);
 }
 
-function scanComposerJson() {
-  const p = path.join(repoRoot, "composer.json");
+function scanComposerJson(dir) {
+  const p = path.join(dir, "composer.json");
   const composer = readJson(p);
   if (!composer) return;
-  addSignal("php", "composer.json");
+  addSignal("php", p);
   const deps = {
     ...(composer.require || {}),
     ...(composer["require-dev"] || {}),
   };
   const names = Object.keys(deps);
-  if (names.some((n) => n.startsWith("laravel/")))
-    addSignal("php", "composer.json");
-  mapDepsToSignals(names, "composer.json");
+  if (names.some((n) => n.startsWith("laravel/"))) addSignal("php", p);
+  mapDepsToSignals(names, p);
 }
 
-function scanPomXml() {
-  const p = path.join(repoRoot, "pom.xml");
+function scanPomXml(dir) {
+  const p = path.join(dir, "pom.xml");
   const text = readText(p);
   if (text == null) return;
-  addSignal("java", "pom.xml");
+  addSignal("java", p);
   // Kotlin projects frequently still carry a pom.xml; detect via plugin/artifact.
-  if (/kotlin/i.test(text)) addSignal("kotlin", "pom.xml");
+  if (/kotlin/i.test(text)) addSignal("kotlin", p);
   const lower = text.toLowerCase();
-  if (/<artifactid>\s*postgresql\b/.test(lower))
-    addSignal("postgres", "pom.xml");
-  if (/<artifactid>\s*mysql-connector/.test(lower))
-    addSignal("mysql", "pom.xml");
-  if (/mongodb/.test(lower)) addSignal("mongodb", "pom.xml");
+  if (/<artifactid>\s*postgresql\b/.test(lower)) addSignal("postgres", p);
+  if (/<artifactid>\s*mysql-connector/.test(lower)) addSignal("mysql", p);
+  if (/mongodb/.test(lower)) addSignal("mongodb", p);
 }
 
-function scanGradle() {
+function scanGradle(dir) {
   for (const f of ["build.gradle", "build.gradle.kts", "settings.gradle.kts"]) {
-    const text = readText(path.join(repoRoot, f));
+    const p = path.join(dir, f);
+    const text = readText(p);
     if (text == null) continue;
-    addSignal("java", f);
-    if (f.endsWith(".kts") || /kotlin/i.test(text)) addSignal("kotlin", f);
+    addSignal("java", p);
+    if (f.endsWith(".kts") || /kotlin/i.test(text)) addSignal("kotlin", p);
     const lower = text.toLowerCase();
-    if (/postgresql/.test(lower)) addSignal("postgres", f);
-    if (/mysql/.test(lower)) addSignal("mysql", f);
-    if (/mongodb/.test(lower)) addSignal("mongodb", f);
+    if (/postgresql/.test(lower)) addSignal("postgres", p);
+    if (/mysql/.test(lower)) addSignal("mysql", p);
+    if (/mongodb/.test(lower)) addSignal("mongodb", p);
   }
 }
 
@@ -340,19 +348,19 @@ function parsePyRequirementNames(text) {
   return names;
 }
 
-function scanRequirementsTxt() {
-  const p = path.join(repoRoot, "requirements.txt");
+function scanRequirementsTxt(dir) {
+  const p = path.join(dir, "requirements.txt");
   const text = readText(p);
   if (text == null) return;
-  addSignal("python", "requirements.txt");
-  mapDepsToSignals(parsePyRequirementNames(text), "requirements.txt");
+  addSignal("python", p);
+  mapDepsToSignals(parsePyRequirementNames(text), p);
 }
 
-function scanPyprojectToml() {
-  const p = path.join(repoRoot, "pyproject.toml");
+function scanPyprojectToml(dir) {
+  const p = path.join(dir, "pyproject.toml");
   const text = readText(p);
   if (text == null) return;
-  addSignal("python", "pyproject.toml");
+  addSignal("python", p);
   // Lightweight extraction of dependency names from common TOML dependency
   // declarations (PEP 621 [project.dependencies], Poetry [tool.poetry...]).
   const names = [];
@@ -368,49 +376,46 @@ function scanPyprojectToml() {
     const kv = line.match(/^([A-Za-z0-9_.\-]+)\s*=/);
     if (kv && kv[1].toLowerCase() !== "python") names.push(kv[1].toLowerCase());
   }
-  mapDepsToSignals(names, "pyproject.toml");
+  mapDepsToSignals(names, p);
 }
 
-function scanGoMod() {
-  const p = path.join(repoRoot, "go.mod");
+function scanGoMod(dir) {
+  const p = path.join(dir, "go.mod");
   const text = readText(p);
   if (text == null) return;
-  addSignal("go", "go.mod");
+  addSignal("go", p);
   const lower = text.toLowerCase();
-  if (/github\.com\/lib\/pq|jackc\/pgx/.test(lower))
-    addSignal("postgres", "go.mod");
-  if (/go-sql-driver\/mysql/.test(lower)) addSignal("mysql", "go.mod");
-  if (/go\.mongodb\.org\/mongo-driver/.test(lower))
-    addSignal("mongodb", "go.mod");
-  if (/redis\/go-redis|gomodule\/redigo/.test(lower))
-    addSignal("redis", "go.mod");
+  if (/github\.com\/lib\/pq|jackc\/pgx/.test(lower)) addSignal("postgres", p);
+  if (/go-sql-driver\/mysql/.test(lower)) addSignal("mysql", p);
+  if (/go\.mongodb\.org\/mongo-driver/.test(lower)) addSignal("mongodb", p);
+  if (/redis\/go-redis|gomodule\/redigo/.test(lower)) addSignal("redis", p);
 }
 
-function scanCargoToml() {
-  const p = path.join(repoRoot, "Cargo.toml");
+function scanCargoToml(dir) {
+  const p = path.join(dir, "Cargo.toml");
   const text = readText(p);
   if (text == null) return;
-  addSignal("rust", "Cargo.toml");
+  addSignal("rust", p);
 }
 
-function scanGemfile() {
-  const p = path.join(repoRoot, "Gemfile");
+function scanGemfile(dir) {
+  const p = path.join(dir, "Gemfile");
   const text = readText(p);
   if (text == null) return;
-  addSignal("ruby", "Gemfile");
+  addSignal("ruby", p);
   const lower = text.toLowerCase();
-  if (/\bpg\b|gem ['"]pg['"]/.test(lower)) addSignal("postgres", "Gemfile");
-  if (/mysql2/.test(lower)) addSignal("mysql", "Gemfile");
-  if (/mongoid|\bmongo\b/.test(lower)) addSignal("mongodb", "Gemfile");
+  if (/\bpg\b|gem ['"]pg['"]/.test(lower)) addSignal("postgres", p);
+  if (/mysql2/.test(lower)) addSignal("mysql", p);
+  if (/mongoid|\bmongo\b/.test(lower)) addSignal("mongodb", p);
 }
 
 // ---------------------------------------------------------------------------
-// Config / marker-file presence detection (shallow)
+// Config / marker-file presence detection (per directory)
 // ---------------------------------------------------------------------------
 
-function scanConfigFiles() {
-  // Exact-name markers at repo root.
-  const rootMarkers = [
+function scanDirMarkers(dir) {
+  // Exact-name markers, checked in `dir` (root or a workspace package root).
+  const dirMarkers = [
     { file: "Dockerfile", signals: [] }, // intentionally no signal: no first-party docker plugin
     { file: "serverless.yml", signals: ["serverless"] },
     { file: "serverless.yaml", signals: ["serverless"] },
@@ -424,9 +429,9 @@ function scanConfigFiles() {
     { file: "firebase.json", signals: ["firebase"] },
     { file: "mint.json", signals: ["docs-site"] },
     { file: "docs.json", signals: ["docs-site"] },
-    // Language / cloud toolchain markers (single-file, root-level). Each target
-    // is a catalog signalIndex key; the matching language-LSP / cloud plugins are
-    // reverse-indexed from it by the skill workflow.
+    // Language / cloud toolchain markers. Each target is a catalog signalIndex
+    // key; the matching language-LSP / cloud plugins are reverse-indexed from it
+    // by the skill workflow.
     { file: "CMakeLists.txt", signals: ["cpp"] },
     { file: "Package.swift", signals: ["swift"] },
     { file: ".luarc.json", signals: ["lua"] },
@@ -435,40 +440,202 @@ function scanConfigFiles() {
     { file: "azure-pipelines.yml", signals: ["azure"] },
     { file: "azure-pipelines.yaml", signals: ["azure"] },
   ];
-  for (const m of rootMarkers) {
-    const p = path.join(repoRoot, m.file);
+  for (const m of dirMarkers) {
+    const p = path.join(dir, m.file);
     if (exists(p)) {
       if (m.signals.length === 0) continue; // present but maps to no plugin
-      for (const s of m.signals) addSignal(s, m.file);
+      for (const s of m.signals) addSignal(s, p);
     }
   }
 
   // Prisma schema -> prisma + postgres.
-  if (exists(path.join(repoRoot, "prisma", "schema.prisma"))) {
-    addSignal("prisma", "prisma/schema.prisma");
-    addSignal("postgres", "prisma/schema.prisma");
+  const prismaSchema = path.join(dir, "prisma", "schema.prisma");
+  if (exists(prismaSchema)) {
+    addSignal("prisma", prismaSchema);
+    addSignal("postgres", prismaSchema);
   }
 
   // Playwright config (any extension).
   for (const ext of ["ts", "js", "mjs", "cjs"]) {
-    const f = `playwright.config.${ext}`;
-    if (exists(path.join(repoRoot, f))) {
-      addSignal("playwright", f);
-      addSignal("frontend", f);
+    const p = path.join(dir, `playwright.config.${ext}`);
+    if (exists(p)) {
+      addSignal("playwright", p);
+      addSignal("frontend", p);
       break;
     }
   }
+}
 
-  // .claude-plugin/ marker -> this repo is itself a plugin / MCP-dev context.
-  if (isDir(path.join(repoRoot, ".claude-plugin"))) {
-    addSignal("mcp-dev", ".claude-plugin/");
+// ---------------------------------------------------------------------------
+// Per-directory dependency + marker scan (root and each workspace package)
+// ---------------------------------------------------------------------------
+
+function scanDir(dir) {
+  scanPackageJson(dir);
+  scanComposerJson(dir);
+  scanPomXml(dir);
+  scanGradle(dir);
+  scanRequirementsTxt(dir);
+  scanPyprojectToml(dir);
+  scanGoMod(dir);
+  scanCargoToml(dir);
+  scanGemfile(dir);
+  scanDirMarkers(dir);
+  scanConnectionStringSchemes(dir);
+}
+
+// Dispatch the single manifest detector matching `filename` for directory `dir`.
+// Used as the depth-3 safety net for layouts a workspace declaration doesn't list.
+function dispatchManifest(filename, dir) {
+  switch (filename) {
+    case "package.json":
+      scanPackageJson(dir);
+      break;
+    case "composer.json":
+      scanComposerJson(dir);
+      break;
+    case "pom.xml":
+      scanPomXml(dir);
+      break;
+    case "build.gradle":
+    case "build.gradle.kts":
+    case "settings.gradle.kts":
+      scanGradle(dir);
+      break;
+    case "requirements.txt":
+      scanRequirementsTxt(dir);
+      break;
+    case "pyproject.toml":
+      scanPyprojectToml(dir);
+      break;
+    case "go.mod":
+      scanGoMod(dir);
+      break;
+    case "Cargo.toml":
+      scanCargoToml(dir);
+      break;
+    case "Gemfile":
+      scanGemfile(dir);
+      break;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Monorepo / workspace detection (reported on a separate `structure` field)
+// ---------------------------------------------------------------------------
+
+// Expand workspace globs ("packages/*", "apps/web", "libs/**") to concrete
+// repo-relative dirs (immediate children of the last literal parent segment).
+function expandWorkspaceGlobs(globs) {
+  const out = new Set();
+  for (const raw of globs) {
+    if (typeof raw !== "string") continue;
+    const g = raw.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/, "");
+    if (!g) continue;
+    if (!g.includes("*")) {
+      if (isDir(path.join(repoRoot, g))) out.add(g);
+      continue;
+    }
+    const parentSegs = [];
+    for (const seg of g.split("/")) {
+      if (seg.includes("*")) break;
+      parentSegs.push(seg);
+    }
+    const parentRel = parentSegs.join("/");
+    const parentAbs = parentRel ? path.join(repoRoot, parentRel) : repoRoot;
+    let entries;
+    try {
+      entries = fs.readdirSync(parentAbs, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const e of entries) {
+      if (!e.isDirectory() || shouldSkipDir(e.name)) continue;
+      out.add(parentRel ? parentRel + "/" + e.name : e.name);
+    }
+  }
+  return [...out];
+}
+
+function detectWorkspaceInfo() {
+  const tools = [];
+  const globs = [];
+
+  // npm / yarn / bun workspaces in package.json (array or { packages: [...] }).
+  const pkg = readJson(path.join(repoRoot, "package.json"));
+  if (pkg && pkg.workspaces) {
+    tools.push("npm/yarn workspaces");
+    const ws = Array.isArray(pkg.workspaces)
+      ? pkg.workspaces
+      : Array.isArray(pkg.workspaces.packages)
+        ? pkg.workspaces.packages
+        : [];
+    for (const g of ws) if (typeof g === "string") globs.push(g);
+  }
+
+  // pnpm-workspace.yaml — minimal "packages:" YAML list parser (no yaml dep).
+  const pnpmText = readText(path.join(repoRoot, "pnpm-workspace.yaml"));
+  if (pnpmText != null) {
+    tools.push("pnpm");
+    let inPackages = false;
+    for (const rawLine of pnpmText.split(/\r?\n/)) {
+      const line = rawLine.replace(/\s+$/, "");
+      if (/^packages\s*:/.test(line)) {
+        inPackages = true;
+        continue;
+      }
+      if (inPackages) {
+        const m = line.match(/^\s*-\s*['"]?([^'"#]+?)['"]?\s*$/);
+        if (m) globs.push(m[1].trim());
+        else if (/^\S/.test(line)) inPackages = false; // dedent ends the block
+      }
+    }
+  }
+
+  // lerna.json
+  const lerna = readJson(path.join(repoRoot, "lerna.json"));
+  if (lerna) {
+    tools.push("lerna");
+    if (Array.isArray(lerna.packages))
+      for (const g of lerna.packages) if (typeof g === "string") globs.push(g);
+  }
+
+  if (exists(path.join(repoRoot, "nx.json"))) tools.push("nx");
+  if (exists(path.join(repoRoot, "turbo.json"))) tools.push("turbo");
+
+  const roots = new Set(expandWorkspaceGlobs(globs));
+
+  // Fallback for marker-only tools (nx/turbo) or unresolved globs.
+  if (roots.size === 0 && tools.length) {
+    for (const base of ["packages", "apps", "services", "libs"]) {
+      const baseAbs = path.join(repoRoot, base);
+      let entries;
+      try {
+        entries = fs.readdirSync(baseAbs, { withFileTypes: true });
+      } catch {
+        continue;
+      }
+      for (const e of entries) {
+        if (e.isDirectory() && !shouldSkipDir(e.name))
+          roots.add(base + "/" + e.name);
+      }
+    }
+  }
+
+  const workspaceRoots = [...roots].sort();
+  return {
+    isMonorepo: tools.length > 0 || workspaceRoots.length > 0,
+    tool: tools.join(", ") || null,
+    workspaceRoots,
+  };
 }
 
 /**
  * Shallow walk (max depth 3) to find Terraform files and OpenAPI/Swagger specs
- * without descending into excluded directories. Records the first few matches
- * as evidence to keep output compact.
+ * without descending into excluded directories, and — as a safety net for
+ * non-standard monorepo layouts — to dispatch the manifest detectors for any
+ * package manifest found below the root. Records the first few tree-marker
+ * matches as evidence to keep output compact.
  */
 function scanTreeMarkers() {
   const MAX_DEPTH = 3;
@@ -477,6 +644,20 @@ function scanTreeMarkers() {
   const openapiCount = { n: 0 };
   // Extension-based language/cloud markers found anywhere in the shallow walk.
   const extCounts = { csharp: 0, cpp: 0, lua: 0, azure: 0 };
+
+  const MANIFEST_NAMES = new Set([
+    "package.json",
+    "composer.json",
+    "pom.xml",
+    "build.gradle",
+    "build.gradle.kts",
+    "settings.gradle.kts",
+    "requirements.txt",
+    "pyproject.toml",
+    "go.mod",
+    "Cargo.toml",
+    "Gemfile",
+  ]);
 
   /** @param {string} dir @param {number} depth */
   function walk(dir, depth) {
@@ -493,6 +674,10 @@ function scanTreeMarkers() {
         if (shouldSkipDir(entry.name)) continue;
         walk(full, depth + 1);
       } else if (entry.isFile()) {
+        // Manifest safety net: dispatch below the root (root is scanned in main).
+        if (depth >= 1 && MANIFEST_NAMES.has(entry.name)) {
+          dispatchManifest(entry.name, dir);
+        }
         const name = entry.name.toLowerCase();
         // Terraform
         if (
@@ -582,12 +767,12 @@ const SCHEME_SIGNAL_RULES = [
 ];
 
 /**
- * Scan a small allow-list of NON-secret config files for connection-string
- * SCHEMES only. .env / .env.* are explicitly excluded — we never read them.
- * For each match we record the file as evidence and the signal; the actual URL
- * and any embedded credentials are discarded immediately.
+ * Scan a small allow-list of NON-secret config files in `dir` for
+ * connection-string SCHEMES only. .env / .env.* are explicitly excluded — we
+ * never read them. For each match we record the file as evidence and the
+ * signal; the actual URL and any embedded credentials are discarded immediately.
  */
-function scanConnectionStringSchemes() {
+function scanConnectionStringSchemes(dir) {
   // Only inspect example/template config that is safe to read and commonly
   // committed. Real secrets live in .env*, which we deliberately skip.
   const candidates = [
@@ -600,11 +785,11 @@ function scanConnectionStringSchemes() {
     "compose.yaml",
   ];
   for (const file of candidates) {
-    const p = path.join(repoRoot, file);
+    const p = path.join(dir, file);
     const text = readText(p);
     if (text == null) continue;
     for (const rule of SCHEME_SIGNAL_RULES) {
-      if (rule.scheme.test(text)) addSignal(rule.signal, file);
+      if (rule.scheme.test(text)) addSignal(rule.signal, p);
     }
   }
 }
@@ -642,19 +827,23 @@ function readAlreadyInstalled() {
 // ---------------------------------------------------------------------------
 
 function main() {
-  scanPackageJson();
-  scanComposerJson();
-  scanPomXml();
-  scanGradle();
-  scanRequirementsTxt();
-  scanPyprojectToml();
-  scanGoMod();
-  scanCargoToml();
-  scanGemfile();
-  scanConfigFiles();
-  scanTreeMarkers();
+  // Root scan (identical behavior to before for a flat, single-package repo).
+  scanDir(repoRoot);
+
+  // Repo-level-only markers.
+  if (isDir(path.join(repoRoot, ".claude-plugin"))) {
+    addSignal("mcp-dev", path.join(repoRoot, ".claude-plugin"));
+  }
   scanGitRemote();
-  scanConnectionStringSchemes();
+
+  // Monorepo: scan each workspace package root so per-package stacks surface.
+  const structure = detectWorkspaceInfo();
+  for (const rel of structure.workspaceRoots) {
+    scanDir(path.join(repoRoot, rel));
+  }
+
+  // Tree markers + depth-3 manifest safety net for non-standard layouts.
+  scanTreeMarkers();
 
   const signals = [...evidence.keys()].sort();
   /** @type {Record<string, string[]>} */
@@ -666,6 +855,7 @@ function main() {
   const result = {
     signals,
     evidence: evidenceOut,
+    structure,
     alreadyInstalled: readAlreadyInstalled(),
   };
 

@@ -28,12 +28,13 @@ everything here maps 1:1 onto the plugin layout described in
 5. [Skills vs legacy commands](#skills-vs-legacy-commands)
 6. [Subagents](#subagents)
 7. [MCP](#mcp)
-8. [Effort, ultracode & the version floor](#effort-ultracode--the-version-floor)
-9. [The adoption engine](#the-adoption-engine)
-10. [Workflows](#workflows)
-11. [Plugin-conversion path](#plugin-conversion-path)
-12. [Quick start](#quick-start)
-13. [License](#license)
+8. [Large codebases & monorepos](#large-codebases--monorepos)
+9. [Effort, ultracode & the version floor](#effort-ultracode--the-version-floor)
+10. [The adoption engine](#the-adoption-engine)
+11. [Workflows](#workflows)
+12. [Plugin-conversion path](#plugin-conversion-path)
+13. [Quick start](#quick-start)
+14. [License](#license)
 
 ---
 
@@ -70,6 +71,15 @@ Why the ordering matters in practice:
 A higher layer can always express a lower layer's intent, but at a cost (more tokens, more
 rigidity, harder to reason about). The discipline is to stop climbing as soon as the
 guarantee holds.
+
+There is a second, orthogonal axis: **locality** — _where_ a layer's config lives and _how
+far down the tree_ it applies. In a small flat repo (like this one) everything sensibly
+lives in one root `CLAUDE.md` + one `.claude/`. In a monorepo that default fills the context
+window with conventions for packages you aren't touching, so the same layers get _scoped_:
+per-directory `CLAUDE.md`, path-scoped `.claude/rules/`, per-package skills, and `Read`
+denies for generated trees. The least-powerful-mechanism discipline still applies — you just
+also choose the **narrowest scope** that covers the code. See
+[Large codebases & monorepos](#large-codebases--monorepos).
 
 ---
 
@@ -179,8 +189,10 @@ Permissions live in [`.claude/settings.json`](.claude/settings.json) under `perm
 with three lists — `allow`, `ask`, `deny` — of tool-pattern strings. This repo allows the
 safe repeatable commands (`npm run lint`, `npm run test:*`, `npm run typecheck`,
 `npm run format`, `git add:*`, `git commit:*`, `git status`, `git diff:*`, `Read(./**)`),
-_asks_ before the one risky thing (`git push:*`), and _denies_ secret reads and raw network
-egress (`Read(.env)`, `Read(.env.*)`, `Read(./secrets/**)`, `Bash(curl:*)`, `Bash(wget:*)`).
+_asks_ before the one risky thing (`git push:*`), and _denies_ secret reads, checked-in
+generated/vendored trees, and raw network egress (`Read(.env)`, `Read(.env.*)`,
+`Read(./secrets/**)`, `Read(./**/dist/**)`, `Read(./**/build/**)`, `Read(./**/*.generated.*)`,
+`Read(./vendor/**)`, `Bash(curl:*)`, `Bash(wget:*)`).
 
 The matcher syntax is unforgiving. The traps that bite people:
 
@@ -197,6 +209,18 @@ The matcher syntax is unforgiving. The traps that bite people:
 local → managed), and a **bare-tool `deny`** (e.g. `deny: ["WebFetch"]`) is _un-loosenable_ —
 no later `allow` can re-enable it. Prefer specific patterns over bare-tool denies unless you
 truly want a permanent lock.
+
+Two practical notes for larger repos. First, the **generated/vendored `Read` denies**
+(`dist/`, `build/`, `*.generated.*`, `vendor/`) are _context hygiene, not security_: they
+stop the agent from burning context `cat`/`grep`-ing machine output. `.gitignore` already
+keeps _untracked_ build output out of searches, but a **committed** generated tree (a
+vendored SDK, checked-in generated clients) needs an explicit deny. Per the docs, a `Read`
+deny covers the built-in file tools and recognized Bash file commands (`cat`, `head`, `grep`,
+`find`) when a denied path is an argument — it does **not** filter denied paths out of a
+recursive search's _output_, nor cover arbitrary subprocesses. Second, **`./`-relative
+patterns scope to the start directory's subtree**, so to match a generated dir wherever it
+appears in a monorepo, prefix the glob with `**/` (`Read(./**/dist/**)`), not just
+`Read(./dist/**)`. See [Large codebases & monorepos](#large-codebases--monorepos).
 
 ---
 
@@ -239,6 +263,36 @@ stop event forever. This repo documents the pattern rather than shipping it, to 
 set readable; the takeaway is that **tool-matcher hooks scope to a tool, not to a filesystem
 effect.**
 
+### Large-repo hook patterns (documented, not shipped)
+
+The same "document the pattern, don't ship it" discipline covers several hook ideas the
+[monorepo guide](https://code.claude.com/docs/en/large-codebases) raises. None ship here —
+each would over-fit the flat sample app or duplicate the CI gate — but they are the natural
+next hooks once this standard lands in a large tree:
+
+- **SessionStart launch-dir → plugin recommender.** A `SessionStart` (all-sources) hook can
+  read the launch directory from its stdin (defensively probe `.cwd` / `.directory` / `$PWD`,
+  `exit 0` if absent), look it up in a committed `path-map.json`, and print "you're in
+  `packages/api/` — its owners maintain the `api-tooling` plugin" to stdout so it lands in
+  context before the first prompt. This is a **new** hook, not a tweak to
+  [`session-context.sh`](.claude/hooks/session-context.sh) (which is `compact`-only).
+- **Stop hook that proposes `CLAUDE.md` updates.** A `Stop` hook receives the session
+  transcript path; it can review the session and propose `CLAUDE.md` edits while the gap is
+  fresh — most valuable per-package, the highest-drift artifact in a monorepo. Guard
+  `stop_hook_active`, as in [the known gap](#the-known-gap-and-how-a-stop-hook-closes-it).
+- **Per-package verification hook.** A `PostToolUse(Edit|Write)` hook can resolve the edited
+  file's nearest `package.json` and run _that_ package's `typecheck`/`lint` (non-blocking).
+  We don't ship it: it would contradict the deliberate "CI is the verification gate; lint
+  doesn't block the turn" decision — but it is the right shape for a monorepo that wants fast
+  per-package feedback.
+- **Format hook resolves prettier from the root.**
+  [`format-on-edit.sh`](.claude/hooks/format-on-edit.sh) runs `npx --no-install prettier` from
+  the launch/worktree root, so in a monorepo every edit is formatted by the _root_ prettier
+  (a package on a different prettier major sees churn; a package whose prettier lives only in
+  its own `node_modules` silently no-ops). Config still auto-discovers per file. Hoist
+  prettier to the workspace root rather than adding per-package binary resolution, which
+  would break the intentionally-cosmetic, exit-0 contract.
+
 ---
 
 ## Skills vs legacy commands
@@ -268,6 +322,30 @@ The skills in this repo:
 Two side-effecting skills are deliberately **inert** so that cloning this repo never mutates
 anything: `/commit` prints rather than commits, and `/recommend-plugins` prints rather than
 installs.
+
+### Scoping & placement in large repos
+
+Three current skill features matter once a repo grows — none the flat sample app needs to
+_ship_, but all the standard should teach:
+
+- **`paths:` frontmatter scopes a skill like a rule.** A skill in the root
+  `.claude/skills/` can declare `paths:` globs so it loads only when Claude touches matching
+  files — e.g. a migration-helper scoped to `**/migrations/**`, which would pair neatly with
+  this repo's protected `migrations/` directory. (No skill here uses `paths:` yet; it is the
+  skill analogue of [`rules/api.md`](.claude/rules/api.md).)
+- **Placement follows scope.** A shared skill (PR conventions, a deploy checklist) lives in
+  the repo-root `.claude/skills/` so it loads from any start directory. An area-specific
+  skill lives under `<package>/.claude/skills/` and loads on demand only while Claude works
+  in that package — in a monorepo, [`api-handler`](.claude/skills/api-handler/SKILL.md)'s
+  `src/api/handlers/` target becomes `packages/<pkg>/...`. Or keep it central and scope it
+  with `paths:`. Cross-repo / versioned reuse → package it as a plugin (already modeled by
+  this repo's [Plugin-conversion path](#plugin-conversion-path)); plugin skills get a
+  `plugin-name:skill-name` namespace, so they never collide with per-directory skills.
+- **Descriptions get shortened when there are many.** Names always load, but with the
+  hundreds of skills a monorepo root accumulates, descriptions are truncated — so front-load
+  each `description` with the literal trigger phrases and scope nouns a request would contain
+  ("tests in `packages/api/`"), not prose. The OTEL `skill_activated` event with
+  `OTEL_LOG_TOOL_DETAILS=1` records which skills actually fire, so you can retire unused ones.
 
 ---
 
@@ -324,6 +402,97 @@ server, `mcp__<server>__<tool>` matches one specific tool — use these in `allo
 
 > **Zero-auth option:** the hosted **Claude Code docs MCP server** needs no credentials —
 > a good first MCP server to try, since there are no env vars to set.
+
+---
+
+## Large codebases & monorepos
+
+This repo is a small **flat** app, so its own config sensibly lives in one root `CLAUDE.md`
+
+- one `.claude/`. But the adoption engine installs the standard into _any_ repo — and the
+  first thing many teams point it at is a monorepo. In a large tree the small-repo defaults
+  fill the context window with instructions and file reads for code the task never touches.
+  The fix is the [locality axis](#the-guiding-principle-least-powerful-mechanism): keep the
+  least-powerful mechanism, and also pick the **narrowest scope** that covers the code. The
+  authoritative reference is the official guide,
+  [Set up Claude Code in a monorepo or large codebase](https://code.claude.com/docs/en/large-codebases);
+  this section maps each mechanism onto the layers above.
+
+### Where you start Claude — and the inheritance trap
+
+Where you launch `claude` decides what loads:
+
+- **From the repo root:** every file is reachable; only the **root** `CLAUDE.md` loads at
+  launch, and each subdirectory's `CLAUDE.md` loads on demand when Claude reads a file
+  there. Best when a task spans packages.
+- **From a package (`cd packages/api && claude`):** that subtree only, with that directory's
+  `CLAUDE.md` **plus every ancestor's**. Best when work is scoped to one package.
+
+> **The trap:** unlike `CLAUDE.md`, `.claude/settings.json` is **not inherited from parent
+> directories** — a root settings file applies _only_ when you start from the root. Launch
+> inside `packages/api/` and the standard's `permissions` (the `.env`/secret/`curl` denies)
+> and its `$CLAUDE_PROJECT_DIR`-wired hooks silently **don't load**. Remedies: start from the
+> root; keep a **self-contained** `.claude/settings.json` per package; or put rules you need
+> everywhere in **managed settings**, which user/project settings can't override.
+
+### Scope instructions: per-directory `CLAUDE.md` vs path-scoped rules
+
+Both target instructions at part of the tree; they differ in where the file lives and when
+it loads.
+
+| Approach                             | Lives                          | Loads when                                                  | Use when                                                             |
+| ------------------------------------ | ------------------------------ | ----------------------------------------------------------- | -------------------------------------------------------------------- |
+| Per-directory `CLAUDE.md`            | inside the directory's code    | at launch from there (or on demand when Claude reads there) | the directory's owners version conventions alongside their code      |
+| Path-scoped rule in `.claude/rules/` | central `.claude/` at the root | when Claude touches a file matching its `paths:` glob       | you want conventions in one place, or one rule spans scattered paths |
+
+This repo ships the path-scoped half — [`rules/api.md`](.claude/rules/api.md) declares
+`paths: ["src/api/**"]` — and can only _describe_ the per-directory half, being flat. A
+monorepo typically uses both: a root `CLAUDE.md` that **orients** ("this is a monorepo;
+packages live under `packages/`; run commands from the package directory") plus, per package,
+either a co-located `CLAUDE.md` or a root `rules/<pkg>.md` scoped with `paths:`.
+
+### Exclude, deny, and reduce reads
+
+- **`claudeMdExcludes`** (settings; arrays merge across user/project/local/managed) skips
+  `CLAUDE.md`/rules under packages you never touch. Patterns match **absolute** paths, so
+  prefix with `**/` (`"**/packages/legacy-*/**"`). Put personal excludes in
+  `settings.local.json`. Managed-policy `CLAUDE.md` can't be excluded. It's static — to focus
+  per-task, _start from that package_ instead.
+- **`Read` denies for committed generated/vendored code** — this repo now ships
+  `Read(./**/dist/**)`, `Read(./**/build/**)`, `Read(./**/*.generated.*)`, `Read(./vendor/**)`
+  (see [Permissions](#permissions-syntax-the-gotchas)). `.gitignore` already keeps _untracked_
+  output out of search; an explicit deny is for trees that are **checked in**.
+- **Code-intelligence (LSP) plugins** — `/recommend-plugins` surfaces the per-language
+  `*-lsp` plugins (`typescript-lsp`, `pyright-lsp`, `gopls-lsp`, …) as **scan-reducers**:
+  jump-to-definition / find-references via a language server instead of grep-walking the tree.
+  Enable repo-wide with the `enabledPlugins` project setting.
+
+### Worktrees & cross-package access
+
+- **`worktree.sparsePaths`** writes only the listed directories (plus root-level files) into a
+  `--worktree` checkout. List directories, not files; root-level **dirs** aren't auto-checked
+  out, so **include `.claude`** or the worktree loses the settings/rules/skills you rely on.
+  Pair with **`worktree.symlinkDirectories: ["node_modules"]`** to avoid duplicating deps.
+  These are read from the start dir _before_ the worktree is created, and are **shared by every
+  worktree in the session** — including subagent worktrees, so list every package a subagent
+  needs.
+- **`permissions.additionalDirectories`** grants file access to sibling packages/repos but
+  **never loads** their `CLAUDE.md`/rules/skills. **`--add-dir`** (or `/add-dir`) loads skills,
+  and loads `CLAUDE.md`/rules only with `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1`.
+
+### Changes that span packages
+
+For a change touching several packages (update a shared type + every call site), do the whole
+change in **one session** so the decisions stay consistent, and ask Claude to **write the plan
+to a markdown file** first — a long cross-package session compacts its context, and the saved
+plan survives where conversation history may not.
+
+### What this flat repo deliberately does _not_ do
+
+It ships **no populated** `claudeMdExcludes`, `worktree.sparsePaths`, or `additionalDirectories`
+— a single flat app has nothing to exclude or sparse-check-out, so a value would be fiction.
+These are documented here and _generated by the adoption engine_ when it detects a workspace
+layout (see [The adoption engine](#the-adoption-engine)), not baked into the sample config.
 
 ---
 

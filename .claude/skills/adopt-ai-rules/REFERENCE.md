@@ -11,40 +11,65 @@ detected-sources globs (used by `scripts/detect.mjs`) and the source→standard 
 flips the run into `migrate` mode. Walks exclude `node_modules/`, `.git/`, `dist/`,
 `build/`, and `vendor/`.
 
+The foreign-family globs are **recursive** (`**/`-prefixed), so a package-local source such
+as `packages/web/.cursorrules` or `apps/api/.windsurf/rules/` is detected in a monorepo —
+not only a root-level one. `CLAUDE.local.md` and `.claude/**` stay root-anchored on purpose
+(local memory and the standard's own `.claude/` tree live at the repo root).
+
 | Family             | Globs                                                                                     |
 | ------------------ | ----------------------------------------------------------------------------------------- |
 | Claude / AGENTS.md | `CLAUDE.md`, `CLAUDE.local.md`, `**/CLAUDE.md`, `AGENTS.md`, `**/AGENTS.md`, `.claude/**` |
-| Cursor             | `.cursorrules`, `.cursor/rules/**/*.mdc`                                                  |
-| GitHub Copilot     | `.github/copilot-instructions.md`, `.github/instructions/**/*.instructions.md`            |
-| Windsurf           | `.windsurfrules`, `.windsurf/rules/**/*`                                                  |
+| Cursor             | `**/.cursorrules`, `**/.cursor/rules/**/*.mdc`                                            |
+| GitHub Copilot     | `**/.github/copilot-instructions.md`, `**/.github/instructions/**/*.instructions.md`      |
+| Windsurf           | `**/.windsurfrules`, `**/.windsurf/rules/**/*`                                            |
 | Gemini             | `GEMINI.md`, `**/GEMINI.md`                                                               |
-| Cline              | `.clinerules`, `.clinerules/**/*`                                                         |
+| Cline              | `**/.clinerules`, `**/.clinerules/**/*`                                                   |
 
-The detector emits:
+The detector emits (the `workspaceRoot`, `isMonorepo`, and `workspaceRoots` fields are
+**additive** — the `{ family, path }` pair every consumer relies on is unchanged):
 
 ```json
 {
   "targetDir": "<abs path>",
-  "sources": [{ "family": "cursor", "path": ".cursorrules" }],
+  "sources": [
+    {
+      "family": "cursor",
+      "path": "packages/web/.cursorrules",
+      "workspaceRoot": "packages/web"
+    }
+  ],
   "hasClaude": false,
-  "mode": "greenfield | migrate"
+  "mode": "greenfield | migrate",
+  "isMonorepo": true,
+  "workspaceRoots": ["packages/api", "packages/web"]
 }
 ```
+
+`workspaceRoot` is the nearest enclosing package directory (longest-prefix match against
+`workspaceRoots`), or `null`. `isMonorepo` is true when a workspace marker is found
+(`workspaces` field, `pnpm-workspace.yaml`, `lerna.json`, `nx.json`, or `turbo.json`). The
+SKILL.md **Monorepo handling** branch uses these to scope conventions per package.
 
 ## Mapping table (source construct → standard target) — §6.3
 
 When migrating, classify each piece of every detected source and route it to the standard
 target below. Build a plan the user confirms before any write.
 
-| Source construct                                                                                  | → Standard target                                               |
-| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Global / always-apply prose conventions                                                           | `CLAUDE.md` body (deduped, sectioned)                           |
-| Glob/path-scoped rules (Cursor `.mdc` glob+`alwaysApply:false`, Copilot `applyTo`, Windsurf glob) | `.claude/rules/<name>.md` with `paths: [<globs>]`               |
-| Cursor `alwaysApply:true`, no glob                                                                | `CLAUDE.md` (or a no-`paths:` rules file)                       |
-| Command/tool prohibitions ("never run rm -rf", "don't touch .env")                                | `settings.json` `permissions.deny` + protect-files hook pattern |
-| Build/test/lint commands                                                                          | `CLAUDE.md` Commands section                                    |
-| Secret / sensitive-path mentions                                                                  | `settings.json` `deny(Read(...))`                               |
-| Ambiguous / freeform                                                                              | preserved verbatim under "Migrated notes (review)" + flagged    |
+| Source construct                                                                                                              | → Standard target                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Global / always-apply prose conventions                                                                                       | `CLAUDE.md` body (deduped, sectioned)                                                                                                                                          |
+| Glob/path-scoped rules (Cursor `.mdc` glob+`alwaysApply:false`, Copilot `applyTo`, Windsurf glob)                             | `.claude/rules/<name>.md` with `paths: [<globs>]`                                                                                                                              |
+| Cursor `alwaysApply:true`, no glob                                                                                            | `CLAUDE.md` (or a no-`paths:` rules file)                                                                                                                                      |
+| Command/tool prohibitions ("never run rm -rf", "don't touch .env")                                                            | `settings.json` `permissions.deny` + protect-files hook pattern                                                                                                                |
+| Build/test/lint commands                                                                                                      | `CLAUDE.md` Commands section                                                                                                                                                   |
+| Secret / sensitive-path mentions                                                                                              | `settings.json` `deny(Read(...))`                                                                                                                                              |
+| Ambiguous / freeform                                                                                                          | preserved verbatim under "Migrated notes (review)" + flagged                                                                                                                   |
+| Package-local source (its `workspaceRoot` is set, e.g. `packages/web/.cursorrules`, or a per-package `CLAUDE.md`/`AGENTS.md`) | a per-package `CLAUDE.md` at `<workspaceRoot>/CLAUDE.md` (lives with the code, dir-owner-maintained) **or** root `.claude/rules/<pkg>.md` with `paths: ["<workspaceRoot>/**"]` |
+
+When a source is package-local, **prefix every derived `paths:` glob with the owning
+`workspaceRoot`** and never fold its always-apply prose into the global root `CLAUDE.md` —
+that would erase the per-area ownership the [monorepo guide](https://code.claude.com/docs/en/large-codebases)
+prescribes. See the SKILL.md **Monorepo handling** branch.
 
 ## Plan → backup interface
 
