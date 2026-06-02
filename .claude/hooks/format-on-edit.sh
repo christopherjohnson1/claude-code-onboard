@@ -14,6 +14,15 @@
 #
 # NOTE: we deliberately do NOT `set -e` here. A non-zero from prettier/npx must
 # not propagate; this hook is best-effort cosmetics only.
+#
+# MONOREPO NOTE: `npx --no-install prettier` resolves the prettier binary from the
+# launch/worktree ROOT, not the edited file's package. Once this standard is adopted into
+# a monorepo, every edit is formatted by the root prettier: a package pinned to a different
+# prettier MAJOR may see formatting churn, and a package whose prettier lives only in its
+# own node_modules will silently no-op under --no-install. Prettier's config still
+# auto-discovers per file, so style is correct wherever a binary is found. This is
+# consistent with the best-effort, exit-0 contract above — hoist prettier to the workspace
+# root for uniform formatting. We deliberately do NOT add per-package binary resolution.
 set -uo pipefail
 
 # Read stdin (hook input JSON).

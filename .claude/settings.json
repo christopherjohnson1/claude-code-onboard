@@ -17,6 +17,10 @@
       "Read(.env)",
       "Read(.env.*)",
       "Read(./secrets/**)",
+      "Read(./**/dist/**)",
+      "Read(./**/build/**)",
+      "Read(./**/*.generated.*)",
+      "Read(./vendor/**)",
       "Bash(curl:*)",
       "Bash(wget:*)"
     ]

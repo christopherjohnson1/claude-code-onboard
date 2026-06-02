@@ -177,6 +177,25 @@ version/engine gate — do not assume one exists.
 
 ---
 
+## Monorepo structure (reported, but not a signal)
+
+`scan.mjs` emits a `structure` field — `{ isMonorepo, tool, workspaceRoots }` — kept
+deliberately OUT of the `signals` array so the signal vocabulary stays a strict subset of
+`signalIndex` (the scanner's stated invariant). `tool` names the workspace manager(s)
+detected (`npm/yarn workspaces`, `pnpm`, `lerna`, `nx`, `turbo`); `workspaceRoots` lists the
+package directories the scan recursed into (so per-package evidence reads
+`packages/api/package.json`, not a bare `package.json`). SKILL.md [step 7](SKILL.md) uses
+this to lead with a large-codebase note. There is intentionally **no `monorepo` key in
+`signalIndex`** — if there were, step 6's per-signal grouping would try to print an empty
+"monorepo" group.
+
+The per-language **`*-lsp` code-intelligence plugins** already in the table below double as
+the large-codebase answer: they replace tree-walking file reads with language-server
+lookups (jump-to-definition, find-references). No new catalog entries are needed for
+monorepo support — the existing language signals already reverse-index to them.
+
+---
+
 ## Full signal → plugin table
 
 Mirrors `plugins-catalog.json`'s `signalIndex`. `strongPicks` (`semgrep`,

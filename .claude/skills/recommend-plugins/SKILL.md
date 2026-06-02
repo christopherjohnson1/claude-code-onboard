@@ -28,12 +28,20 @@ Run the bundled scanner against the repo root:
 node "${CLAUDE_SKILL_DIR}/scripts/scan.mjs" "$CLAUDE_PROJECT_DIR"
 ```
 
-It prints JSON: `{ signals: [...], evidence: { signal: [paths] }, alreadyInstalled: [...] }`.
+It prints JSON: `{ signals: [...], evidence: { signal: [paths] }, structure: {...}, alreadyInstalled: [...] }`.
 `signals` are drawn from a fixed vocabulary (the keys of the catalog's `signalIndex`).
 `evidence` maps each signal to the files that triggered it (cite these to the user).
+`structure` is `{ isMonorepo, tool, workspaceRoots }` — see [step 7](#7-monorepo-large-codebase-note).
 `alreadyInstalled` is the `<plugin>@<marketplace>` set from `installed_plugins.json`
 (read-only). Connection-string detection reports URL scheme + key presence only —
 the scanner never reads `.env` or emits secret values.
+
+The scanner is **monorepo-aware**: it runs the dependency/marker detectors at the repo
+root _and_ at each workspace package root (npm/yarn/bun `workspaces`,
+`pnpm-workspace.yaml`, `lerna.json`, `nx.json`, `turbo.json`), so per-package stacks
+surface with package-scoped evidence (e.g. `postgres — from packages/api/package.json`).
+Monorepo status is reported on `structure`, never as a signal — the signal vocabulary
+stays a strict subset of `signalIndex`.
 
 If the user's request names a stack the scan missed (e.g. "I'm about to add
 Stripe"), treat that as an extra signal and reverse-index it the same way.
@@ -114,6 +122,35 @@ were suppressed because they're already installed.
 all needed `/plugin marketplace add <owner/repo>` lines FIRST (deduped, only for
 marketplaces not already known), then all `/plugin install <plugin>@<marketplace>`
 lines. This is the deliverable — never run it yourself.
+
+### 7. Monorepo / large-codebase note
+
+When `structure.isMonorepo` is true (or the repo is simply very large), open the
+recommendation — _before_ the Strong picks — with a short note. In a big tree the
+highest-leverage win is usually reducing what Claude has to read, not adding more plugins:
+
+- **Code-intelligence (LSP) plugins are the headline pick here.** For each language
+  signal, the matching `*-lsp` plugin (`typescript-lsp`, `pyright-lsp`, `gopls-lsp`,
+  `rust-analyzer-lsp`, …) lets Claude jump to definitions and find references through a
+  language server instead of grep-walking the tree — fewer file reads, less context
+  burned. These already live in `signalIndex` under `node`/`typescript`/`python`/`go`/…
+  and rank through the normal flow; just **frame them as scan-reducers** here. They
+  require the matching language-server binary on each developer's machine.
+- **Some wins have no plugin — name them anyway.** Point the user at the settings the
+  monorepo guide covers that no plugin can install: per-directory `CLAUDE.md`,
+  `claudeMdExcludes` for packages they never touch, `permissions.deny` rules
+  (`Read(./**/dist/**)`, `Read(./**/build/**)`, `Read(./**/*.generated.*)`,
+  `Read(./vendor/**)`) for checked-in generated/vendored code, and `worktree.sparsePaths`
+  (+ `symlinkDirectories`). Link the official guide:
+  <https://code.claude.com/docs/en/large-codebases>.
+- **An org code-search / RAG index?** If the team already runs one, suggest exposing it as
+  an MCP server so Claude queries it instead of reading files. Recommend-only — never wire
+  it up here.
+- List the detected `structure.workspaceRoots` so the user sees the scan covered each
+  package, and remind them they can re-run `/recommend-plugins` from _inside_ one package
+  for a list focused on that package's stack.
+
+This stays within the HARD INVARIANT: it PRINTS guidance and `/plugin` commands only.
 
 ## Honesty notes
 
