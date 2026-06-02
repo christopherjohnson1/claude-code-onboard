@@ -539,6 +539,58 @@ Other rules to know:
 
 ## Quick start
 
+### Install & use the plugin (in any repo)
+
+> **Prerequisites:** Claude Code **≥ 2.1.160** and `git` on the machine. This repo is a
+> **public** GitHub marketplace, so no GitHub auth is needed to add it.
+
+Plugins install at the **user level**, so it doesn't matter which workspace you're in. From
+inside a Claude Code session, add the marketplace and install the plugin:
+
+```text
+/plugin marketplace add christopherjohnson1/claude-code-onboard
+/plugin install claude-code-onboard@claude-code-onboard
+```
+
+- The first command clones the repo into Claude Code's local cache and registers it as a
+  marketplace (it finds [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json)
+  automatically).
+- The install ref is `<plugin>@<marketplace>` — both are named `claude-code-onboard` here.
+- Prefer a UI? Run `/plugin` with no arguments to add the marketplace and install from the
+  interactive browser.
+- [`check-version.sh`](.claude/hooks/check-version.sh) warns on session start if you're below
+  2.1.160 (a soft floor — see [Effort, ultracode & the version floor](#effort-ultracode--the-version-floor)).
+
+Once installed, the commands are **namespaced** under the plugin name:
+
+```text
+/claude-code-onboard:adopt-ai-rules      # scaffold or migrate a repo to this standard
+/claude-code-onboard:revert-ai-rules     # undo an adoption from its backup snapshot
+/claude-code-onboard:recommend-plugins   # scan the repo, print real /plugin suggestions
+/claude-code-onboard:fix-issue <n>       # fetch a GitHub issue, implement, stage + commit
+/claude-code-onboard:commit              # draft a Conventional-Commits message (prints only)
+/claude-code-onboard:api-handler         # scaffold a new src/api/handlers/ handler
+```
+
+**The intended flow in a fresh repo:** install the plugin, then run
+**`/claude-code-onboard:adopt-ai-rules`** to scaffold the configuration standard (`CLAUDE.md`,
+`settings.json`, `.claude/rules/`, the hooks) into it — backed up first and fully reversible
+via `/claude-code-onboard:revert-ai-rules`. See [The adoption engine](#the-adoption-engine).
+
+Two things to know before you rely on it:
+
+- **The plugin ships the skills, the two subagents, and the six hooks — _not_ this repo's
+  `CLAUDE.md` or `settings.json` permissions.** Those are project-scoped (a plugin-root
+  `CLAUDE.md` is [never loaded](#plugin-conversion-path)), which is exactly why
+  `adopt-ai-rules` exists: it installs those project files into a target repo.
+- **An installed plugin's hooks are active in _every_ repo on that machine.**
+  [`format-on-edit.sh`](.claude/hooks/format-on-edit.sh) runs `prettier --write` on files you
+  edit, and [`protect-files.sh`](.claude/hooks/protect-files.sh) blocks edits to `migrations/`,
+  `.env*`, `package-lock.json`, and `.git/`. Disable the plugin via `/plugin` in repos where
+  you don't want those guards.
+
+### Local development (working on this repo)
+
 ```bash
 # 1. Install dependencies
 npm install
