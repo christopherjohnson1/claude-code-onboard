@@ -45,9 +45,11 @@ node "${CLAUDE_SKILL_DIR}/scripts/detect.mjs" "$CLAUDE_PROJECT_DIR"
 It emits an inventory JSON:
 `{ targetDir, sources: [{ family, path, workspaceRoot }], hasClaude, mode, isMonorepo, workspaceRoots }`.
 `mode` is `"migrate"` when any foreign (non-Claude) source is found, otherwise
-`"greenfield"`. `isMonorepo`/`workspaceRoots` flag a workspace layout (npm/yarn/bun
-`workspaces`, `pnpm-workspace.yaml`, `lerna.json`, `nx.json`, `turbo.json`), and each
-source's `workspaceRoot` is the package it belongs to (or `null`). Foreign-source globs are
+`"greenfield"`. `isMonorepo`/`workspaceRoots` flag a workspace layout — either an explicit
+manager (npm/yarn/bun `workspaces`, `pnpm-workspace.yaml`, `lerna.json`, `nx.json`,
+`turbo.json`) or, with **no** manager, a conventional `packages/`-style layout or ≥2 sibling
+top-level project folders (e.g. `api/`, `webapp/`, `infrastructure/`). Each source's
+`workspaceRoot` is the package it belongs to (or `null`). Foreign-source globs are
 recursive, so a package-local source such as `packages/web/.cursorrules` is detected, not
 only a root-level one. The detected-source globs are listed in
 [REFERENCE.md](REFERENCE.md) §6.2; when `isMonorepo` is true, see **Monorepo handling**

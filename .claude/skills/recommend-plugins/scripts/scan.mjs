@@ -557,6 +557,100 @@ function expandWorkspaceGlobs(globs) {
   return [...out];
 }
 
+// Conventional parents whose children are usually packages.
+const WORKSPACE_PARENTS = [
+  "packages",
+  "apps",
+  "services",
+  "libs",
+  "modules",
+  "projects",
+];
+
+// Manifests whose presence at a directory's root marks it as a project of its own.
+const PROJECT_MANIFESTS = [
+  "package.json",
+  "project.json", // nx
+  "pyproject.toml",
+  "requirements.txt",
+  "setup.py",
+  "Pipfile",
+  "go.mod",
+  "Cargo.toml",
+  "pom.xml",
+  "build.gradle",
+  "build.gradle.kts",
+  "composer.json",
+  "Gemfile",
+  "pubspec.yaml", // Flutter / Dart
+];
+
+const PROJECT_MANIFEST_SET = new Set(PROJECT_MANIFESTS);
+
+// A filename that marks a project of its own: a recognized manifest (exact name) or an
+// infra/build marker by extension (.tf/.tf.json/.bicep, cdk.json, serverless.yml,
+// .csproj/.sln).
+function isProjectMarkerFile(name) {
+  if (PROJECT_MANIFEST_SET.has(name)) return true;
+  const n = name.toLowerCase();
+  return (
+    n.endsWith(".tf") ||
+    n.endsWith(".tf.json") ||
+    n.endsWith(".bicep") ||
+    n === "cdk.json" ||
+    n === "serverless.yml" ||
+    n === "serverless.yaml" ||
+    n.endsWith(".csproj") ||
+    n.endsWith(".sln")
+  );
+}
+
+// Does `dirAbs` look like a project root? True if a manifest or infra/build marker appears
+// within `maxDepth` levels (0 = the dir itself). The shallow descent handles .NET/infra
+// layouts that nest the manifest under src/. Skips excluded/dot dirs while descending.
+function looksLikeProjectDir(dirAbs, maxDepth = 2, depth = 0) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dirAbs, { withFileTypes: true });
+  } catch {
+    return false;
+  }
+  const subdirs = [];
+  for (const e of entries) {
+    if (e.isFile()) {
+      if (isProjectMarkerFile(e.name)) return true;
+    } else if (e.isDirectory() && !shouldSkipDir(e.name)) {
+      subdirs.push(e.name);
+    }
+  }
+  if (depth >= maxDepth) return false;
+  for (const sd of subdirs) {
+    if (looksLikeProjectDir(path.join(dirAbs, sd), maxDepth, depth + 1)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Immediate child directories of `parentRel` that look like projects. "" enumerates the
+// repo root's own top-level directories.
+function projectChildren(parentRel) {
+  const parentAbs = parentRel ? path.join(repoRoot, parentRel) : repoRoot;
+  let entries;
+  try {
+    entries = fs.readdirSync(parentAbs, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const e of entries) {
+    if (!e.isDirectory() || shouldSkipDir(e.name)) continue;
+    const childRel = parentRel ? parentRel + "/" + e.name : e.name;
+    if (looksLikeProjectDir(path.join(repoRoot, childRel))) out.push(childRel);
+  }
+  return out;
+}
+
 function detectWorkspaceInfo() {
   const tools = [];
   const globs = [];
@@ -605,20 +699,26 @@ function detectWorkspaceInfo() {
 
   const roots = new Set(expandWorkspaceGlobs(globs));
 
-  // Fallback for marker-only tools (nx/turbo) or unresolved globs.
-  if (roots.size === 0 && tools.length) {
-    for (const base of ["packages", "apps", "services", "libs"]) {
-      const baseAbs = path.join(repoRoot, base);
-      let entries;
-      try {
-        entries = fs.readdirSync(baseAbs, { withFileTypes: true });
-      } catch {
-        continue;
-      }
-      for (const e of entries) {
-        if (e.isDirectory() && !shouldSkipDir(e.name))
-          roots.add(base + "/" + e.name);
-      }
+  // Fallback 1: conventional parents (packages/ apps/ services/ libs/ …), with OR without
+  // a workspace marker — the parent name is the signal, so ≥1 project child is enough.
+  if (roots.size === 0) {
+    for (const base of WORKSPACE_PARENTS) {
+      if (!isDir(path.join(repoRoot, base))) continue;
+      for (const child of projectChildren(base)) roots.add(child);
+    }
+    if (roots.size && tools.length === 0)
+      tools.push("convention (packages/, apps/, …)");
+  }
+
+  // Fallback 2 (marker-less): several sibling project folders at the repo root, even with
+  // no workspace manager and no packages/ parent — e.g. api/, webapp/, emails/,
+  // infrastructure/, a flutter wrapper. Require ≥2 to avoid flagging an ordinary app with
+  // a single nested sub-project (functions/, examples/).
+  if (roots.size === 0 && tools.length === 0) {
+    const top = projectChildren("");
+    if (top.length >= 2) {
+      top.forEach((r) => roots.add(r));
+      tools.push("top-level project folders (no workspace manager)");
     }
   }
 
