@@ -37,8 +37,10 @@ It prints JSON: `{ signals: [...], evidence: { signal: [paths] }, structure: {..
 the scanner never reads `.env` or emits secret values.
 
 The scanner is **monorepo-aware**: it runs the dependency/marker detectors at the repo
-root _and_ at each workspace package root (npm/yarn/bun `workspaces`,
-`pnpm-workspace.yaml`, `lerna.json`, `nx.json`, `turbo.json`), so per-package stacks
+root _and_ at each workspace package root. It finds those roots from an explicit manager
+(npm/yarn/bun `workspaces`, `pnpm-workspace.yaml`, `lerna.json`, `nx.json`, `turbo.json`)
+or, with **no** manager, from a conventional `packages/`-style layout or ≥2 sibling
+top-level project folders (e.g. `api/`, `webapp/`, `infrastructure/`). So per-package stacks
 surface with package-scoped evidence (e.g. `postgres — from packages/api/package.json`).
 Monorepo status is reported on `structure`, never as a signal — the signal vocabulary
 stays a strict subset of `signalIndex`.

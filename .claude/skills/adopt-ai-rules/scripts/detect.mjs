@@ -10,8 +10,10 @@
 //                                                            // package dir in a monorepo, else null
 //             hasClaude: boolean,             // any Claude/AGENTS.md/.claude source found
 //             mode: "greenfield" | "migrate", // migrate iff a FOREIGN (non-Claude) source exists
-//             isMonorepo: boolean,            // a workspace marker was found (ADDITIVE field)
+//             isMonorepo: boolean,            // workspace marker, conventional packages/ layout,
+//                                             // or >=2 sibling project folders (ADDITIVE field)
 //             workspaceRoots: string[]        // POSIX-relative package dirs, e.g. ["packages/api"]
+//                                             // or top-level project dirs, e.g. ["api","webapp"]
 //           }
 //
 // The isMonorepo / workspaceRoots fields and the per-source workspaceRoot key are ADDITIVE:
@@ -298,31 +300,139 @@ function readWorkspaceGlobs(rootAbs) {
   return { marker, globs };
 }
 
-// Resolve concrete workspace package roots, plus a boolean monorepo flag.
+// Conventional parents whose children are usually packages.
+const WORKSPACE_PARENTS = [
+  "packages",
+  "apps",
+  "services",
+  "libs",
+  "modules",
+  "projects",
+];
+
+// Manifests whose presence at a directory's root marks it as a project of its own.
+const PROJECT_MANIFESTS = [
+  "package.json",
+  "project.json", // nx
+  "pyproject.toml",
+  "requirements.txt",
+  "setup.py",
+  "Pipfile",
+  "go.mod",
+  "Cargo.toml",
+  "pom.xml",
+  "build.gradle",
+  "build.gradle.kts",
+  "composer.json",
+  "Gemfile",
+  "pubspec.yaml", // Flutter / Dart
+];
+
+const PROJECT_MANIFEST_SET = new Set(PROJECT_MANIFESTS);
+
+// A filename that marks a project of its own: a recognized manifest (exact name) or an
+// infra/build marker by extension (.tf/.tf.json/.bicep, cdk.json, serverless.yml,
+// .csproj/.sln).
+function isProjectMarkerFile(name) {
+  if (PROJECT_MANIFEST_SET.has(name)) return true;
+  const n = name.toLowerCase();
+  return (
+    n.endsWith(".tf") ||
+    n.endsWith(".tf.json") ||
+    n.endsWith(".bicep") ||
+    n === "cdk.json" ||
+    n === "serverless.yml" ||
+    n === "serverless.yaml" ||
+    n.endsWith(".csproj") ||
+    n.endsWith(".sln")
+  );
+}
+
+// Does `dirAbs` look like a project root? True if a manifest or infra/build marker appears
+// within `maxDepth` levels (0 = the dir itself). The shallow descent handles .NET/infra
+// layouts that nest the manifest under src/. Skips excluded/dot dirs while descending.
+function looksLikeProjectDir(dirAbs, maxDepth = 2, depth = 0) {
+  let entries;
+  try {
+    entries = fs.readdirSync(dirAbs, { withFileTypes: true });
+  } catch {
+    return false;
+  }
+  const subdirs = [];
+  for (const e of entries) {
+    if (e.isFile()) {
+      if (isProjectMarkerFile(e.name)) return true;
+    } else if (
+      e.isDirectory() &&
+      !EXCLUDED_DIRS.has(e.name) &&
+      !e.name.startsWith(".")
+    ) {
+      subdirs.push(e.name);
+    }
+  }
+  if (depth >= maxDepth) return false;
+  for (const sd of subdirs) {
+    if (looksLikeProjectDir(path.join(dirAbs, sd), maxDepth, depth + 1)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Immediate child directories of `parentRel` (relative to root) that look like projects.
+// `parentRel` of "" enumerates the repo root's own top-level directories.
+function projectChildren(parentRel, rootAbs) {
+  const parentAbs = parentRel ? path.join(rootAbs, parentRel) : rootAbs;
+  let entries;
+  try {
+    entries = fs.readdirSync(parentAbs, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const e of entries) {
+    if (!e.isDirectory() || EXCLUDED_DIRS.has(e.name) || e.name.startsWith("."))
+      continue;
+    const childRel = parentRel ? parentRel + "/" + e.name : e.name;
+    if (looksLikeProjectDir(path.join(rootAbs, childRel))) out.push(childRel);
+  }
+  return out;
+}
+
+// Resolve concrete workspace package roots, plus a boolean monorepo flag. Detection
+// degrades gracefully: explicit workspace declarations first, then conventional parents,
+// then a marker-less heuristic for repos that are "just folders" with no workspace tool.
 function detectWorkspaces(rootAbs) {
   const { marker, globs } = readWorkspaceGlobs(rootAbs);
   const roots = new Set(expandWorkspaceGlobs(globs, rootAbs));
 
-  // Fallback for marker-only tools (nx/turbo) or unresolved globs: enumerate the
-  // immediate children of conventional workspace parents.
-  if (roots.size === 0 && marker) {
-    for (const base of ["packages", "apps", "services", "libs"]) {
-      const baseAbs = path.join(rootAbs, base);
-      let entries;
-      try {
-        entries = fs.readdirSync(baseAbs, { withFileTypes: true });
-      } catch {
-        continue;
-      }
-      for (const e of entries) {
-        if (e.isDirectory() && !EXCLUDED_DIRS.has(e.name))
-          roots.add(base + "/" + e.name);
-      }
+  // Fallback 1: conventional parents (packages/ apps/ services/ libs/ …), with OR without
+  // a workspace marker — the parent NAME is the signal, so ≥1 project child is enough.
+  if (roots.size === 0) {
+    for (const base of WORKSPACE_PARENTS) {
+      if (!isDir(path.join(rootAbs, base))) continue;
+      for (const child of projectChildren(base, rootAbs)) roots.add(child);
+    }
+  }
+
+  // Fallback 2 (marker-less): several sibling project folders at the repo root, even with
+  // no workspace manager and no packages/ parent — e.g. api/, webapp/, emails/,
+  // infrastructure/, a flutter wrapper. Require ≥2 so an ordinary app with one nested
+  // sub-project (functions/, examples/) is not misread as a monorepo.
+  let markerless = false;
+  if (roots.size === 0 && !marker) {
+    const top = projectChildren("", rootAbs);
+    if (top.length >= 2) {
+      top.forEach((r) => roots.add(r));
+      markerless = true;
     }
   }
 
   const workspaceRoots = [...roots].sort();
-  return { isMonorepo: marker || workspaceRoots.length > 0, workspaceRoots };
+  return {
+    isMonorepo: marker || markerless || workspaceRoots.length > 0,
+    workspaceRoots,
+  };
 }
 
 // Longest-prefix match: the nearest workspace root that contains `relPath`, else null.

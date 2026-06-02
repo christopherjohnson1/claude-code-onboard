@@ -47,8 +47,10 @@ The detector emits (the `workspaceRoot`, `isMonorepo`, and `workspaceRoots` fiel
 
 `workspaceRoot` is the nearest enclosing package directory (longest-prefix match against
 `workspaceRoots`), or `null`. `isMonorepo` is true when a workspace marker is found
-(`workspaces` field, `pnpm-workspace.yaml`, `lerna.json`, `nx.json`, or `turbo.json`). The
-SKILL.md **Monorepo handling** branch uses these to scope conventions per package.
+(`workspaces` field, `pnpm-workspace.yaml`, `lerna.json`, `nx.json`, or `turbo.json`) — or,
+with no manager at all, when a conventional `packages/`-style layout or ≥2 sibling top-level
+project folders are present (each carrying its own manifest or infra marker). The SKILL.md
+**Monorepo handling** branch uses these to scope conventions per package.
 
 ## Mapping table (source construct → standard target) — §6.3
 

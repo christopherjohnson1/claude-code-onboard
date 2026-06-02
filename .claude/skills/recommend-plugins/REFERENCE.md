@@ -182,9 +182,11 @@ version/engine gate — do not assume one exists.
 `scan.mjs` emits a `structure` field — `{ isMonorepo, tool, workspaceRoots }` — kept
 deliberately OUT of the `signals` array so the signal vocabulary stays a strict subset of
 `signalIndex` (the scanner's stated invariant). `tool` names the workspace manager(s)
-detected (`npm/yarn workspaces`, `pnpm`, `lerna`, `nx`, `turbo`); `workspaceRoots` lists the
-package directories the scan recursed into (so per-package evidence reads
-`packages/api/package.json`, not a bare `package.json`). SKILL.md [step 7](SKILL.md) uses
+detected (`npm/yarn workspaces`, `pnpm`, `lerna`, `nx`, `turbo`), or `convention (packages/,
+apps/, …)` / `top-level project folders (no workspace manager)` when there is no manager but
+the layout is still a monorepo; `workspaceRoots` lists the package directories the scan
+recursed into (so per-package evidence reads `packages/api/package.json`, not a bare
+`package.json`). SKILL.md [step 7](SKILL.md) uses
 this to lead with a large-codebase note. There is intentionally **no `monorepo` key in
 `signalIndex`** — if there were, step 6's per-signal grouping would try to print an empty
 "monorepo" group.
