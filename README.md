@@ -93,6 +93,10 @@ claude-code-onboard/
 │   ├── ISSUE_TEMPLATE/                # bug_report.md, feature_request.md, config.yml
 │   ├── PULL_REQUEST_TEMPLATE.md       # PR checklist mirroring the verification loop
 │   └── dependabot.yml                 # weekly npm + github-actions updates
+├── .claude-plugin/                     # makes the repo an installable plugin (in-place, zero-dup)
+│   ├── plugin.json                     # manifest: remaps components onto .claude/; floor in description
+│   ├── marketplace.json                # single-plugin marketplace (source: "./")
+│   └── hooks.json                      # settings.json hooks rebased to ${CLAUDE_PLUGIN_ROOT}
 ├── package.json                       # scripts: lint / test / typecheck / format
 ├── package-lock.json                  # committed lockfile → reproducible `npm ci` in CI
 ├── eslint.config.js                   # flat ESLint config (makes `npm run lint` real); bans default exports
@@ -483,8 +487,27 @@ Most are **documented patterns** rather than shipped code; the CI workflow is th
 
 ## Plugin-conversion path
 
-This repo is the prototype of a distributable plugin. Converting it is a mechanical
-re-layout — the contents are already correct:
+This repo **is** a distributable plugin — packaged **in-place**, with zero file duplication,
+true to its "dogfoods exactly what it installs" principle. A thin
+[`.claude-plugin/`](.claude-plugin/) manifest remaps the plugin's components onto the existing
+`.claude/` tree (no top-level re-layout, no forked copies):
+
+| File                                                  | Role                                                                                                                                                                                                                                                                         |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`plugin.json`](.claude-plugin/plugin.json)           | Manifest. Remaps `commands`/`skills` to the `.claude/…` dirs and `agents` to the two agent **files** (the `agents` field takes file paths, not a directory — unlike `commands`/`skills`); points `hooks` at the hooks.json below; states the 2.1.160 floor in `description`. |
+| [`hooks.json`](.claude-plugin/hooks.json)             | The `settings.json` `hooks` object, rebased from `$CLAUDE_PROJECT_DIR` to `${CLAUDE_PLUGIN_ROOT}` so the same `.claude/hooks/*.sh` scripts run from the install cache.                                                                                                       |
+| [`marketplace.json`](.claude-plugin/marketplace.json) | Makes the repo its own single-plugin marketplace (`source: "./"`).                                                                                                                                                                                                           |
+
+Install it (a git-marketplace install clones the whole repo into the cache, so the remapped
+`.claude/…` paths and `${CLAUDE_PLUGIN_ROOT}/.claude/hooks/*.sh` resolve unchanged):
+
+```bash
+/plugin marketplace add christopherjohnson1/claude-code-onboard
+/plugin install claude-code-onboard@claude-code-onboard
+```
+
+The conventional alternative is a mechanical top-level re-layout — shown here for reference,
+though we chose in-place to avoid duplicating the standard:
 
 | In this repo (project)                 | In a plugin                                                                      |
 | -------------------------------------- | -------------------------------------------------------------------------------- |
@@ -497,14 +520,14 @@ re-layout — the contents are already correct:
 Other rules to know:
 
 - **Plugin skills are namespaced**: `/recommend-plugins` becomes
-  `/<plugin>:recommend-plugins`.
+  `/claude-code-onboard:recommend-plugins`.
 - **Paths use `${CLAUDE_PLUGIN_ROOT}`** instead of `$CLAUDE_PROJECT_DIR`. The adoption
   payload already resolves via `${CLAUDE_PLUGIN_ROOT:-$CLAUDE_PROJECT_DIR}`, so it works in
   both forms unchanged.
 - **A plugin-root `CLAUDE.md` is NOT loaded** — don't rely on one for plugin behavior; put
   guidance in skills/agents instead.
 - The adoption skills are the plugin's reason to exist. The **version-floor + effort hooks**
-  ship in the plugin's `hooks/hooks.json`, and the **2.1.160 floor goes in the plugin
+  ship in `.claude-plugin/hooks.json`, and the **2.1.160 floor goes in the plugin
   `description`** — the only human-readable place it can be stated, since no manifest field
   enforces it.
 
