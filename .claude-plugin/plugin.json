@@ -1,0 +1,23 @@
+{
+  "name": "claude-code-onboard",
+  "version": "0.1.0",
+  "description": "Onboard any repo to a canonical Claude Code configuration standard — greenfield-scaffold or migrate from Cursor/Copilot/Windsurf/Gemini/Cline/AGENTS.md, then revert cleanly. Requires Claude Code >= 2.1.160 and an xhigh-capable model (Opus 4.7/4.8).",
+  "author": { "name": "Chris Johnson" },
+  "homepage": "https://github.com/christopherjohnson1/claude-code-onboard",
+  "repository": "https://github.com/christopherjohnson1/claude-code-onboard",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "configuration",
+    "adoption",
+    "onboarding",
+    "ai-rules"
+  ],
+  "commands": "./.claude/commands/",
+  "agents": [
+    "./.claude/agents/code-reviewer.md",
+    "./.claude/agents/security-reviewer.md"
+  ],
+  "skills": "./.claude/skills/",
+  "hooks": "./.claude-plugin/hooks.json"
+}

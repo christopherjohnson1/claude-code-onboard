@@ -1,0 +1,13 @@
+{
+  "name": "claude-code-onboard",
+  "owner": { "name": "Chris Johnson" },
+  "description": "Single-plugin marketplace hosting claude-code-onboard (the repo is its own marketplace).",
+  "plugins": [
+    {
+      "name": "claude-code-onboard",
+      "source": "./",
+      "description": "Onboard any repo to a canonical Claude Code configuration standard, with clean revert.",
+      "version": "0.1.0"
+    }
+  ]
+}

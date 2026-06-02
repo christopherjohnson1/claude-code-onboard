@@ -1,0 +1,67 @@
+{
+  "description": "Hooks for the claude-code-onboard plugin — identical wiring to the project's .claude/settings.json, with script paths rebased from $CLAUDE_PROJECT_DIR to ${CLAUDE_PLUGIN_ROOT} so the same scripts work once the plugin is installed to the cache.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/protect-files.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(rm -rf *)",
+            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/no-rm-rf.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/format-on-edit.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-context.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/check-version.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "matcher": "adopt-ai-rules|revert-ai-rules|recommend-plugins|fix-issue|commit|api-handler|legacy-hello",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/recommend-effort.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
