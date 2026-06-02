@@ -20,7 +20,9 @@
 #      (e.g. "claude-code-onboard:commit"); we match both forms.
 #
 # Output contract: emit a ONE-TIME nudge via the universal `systemMessage` JSON
-# field ONLY. NEVER additionalContext (unsupported on this event), NEVER
+# field ONLY. `additionalContext` IS supported on this event (per the hooks
+# docs) but injects into Claude's context rather than surfacing to the user, so
+# we deliberately use `systemMessage` (the user-facing channel). NEVER
 # decision:"block"; never mix `exit 2` with JSON.
 set -uo pipefail
 
