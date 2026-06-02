@@ -519,17 +519,26 @@ function scanTreeMarkers() {
           extCounts.csharp++;
         }
         // C++ MSBuild projects
-        if (name.endsWith(".vcxproj") && extCounts.cpp < MAX_EVIDENCE_PER_SIGNAL) {
+        if (
+          name.endsWith(".vcxproj") &&
+          extCounts.cpp < MAX_EVIDENCE_PER_SIGNAL
+        ) {
           addSignal("cpp", full);
           extCounts.cpp++;
         }
         // Lua rockspecs
-        if (name.endsWith(".rockspec") && extCounts.lua < MAX_EVIDENCE_PER_SIGNAL) {
+        if (
+          name.endsWith(".rockspec") &&
+          extCounts.lua < MAX_EVIDENCE_PER_SIGNAL
+        ) {
           addSignal("lua", full);
           extCounts.lua++;
         }
         // Azure Bicep IaC
-        if (name.endsWith(".bicep") && extCounts.azure < MAX_EVIDENCE_PER_SIGNAL) {
+        if (
+          name.endsWith(".bicep") &&
+          extCounts.azure < MAX_EVIDENCE_PER_SIGNAL
+        ) {
           addSignal("azure", full);
           extCounts.azure++;
         }

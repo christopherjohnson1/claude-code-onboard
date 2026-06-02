@@ -63,7 +63,7 @@ The confirmed plan is materialized as a JSON plan file with this shape (the inte
 ```json
 {
   "mode": "greenfield | migrate",
-  "sources": [ { "family": "...", "path": "..." } ],
+  "sources": [{ "family": "...", "path": "..." }],
   "operations": [
     { "path": "CLAUDE.md", "op": "create" },
     { "path": ".claude/rules/api.md", "op": "modify" },

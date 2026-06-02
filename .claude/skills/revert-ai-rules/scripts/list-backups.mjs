@@ -27,7 +27,9 @@ function resolveTargetDir() {
 
 function readManifest(dirAbs) {
   try {
-    const data = JSON.parse(fs.readFileSync(path.join(dirAbs, "manifest.json"), "utf8"));
+    const data = JSON.parse(
+      fs.readFileSync(path.join(dirAbs, "manifest.json"), "utf8"),
+    );
     return data;
   } catch {
     return null;
@@ -45,12 +47,16 @@ function main() {
       .filter((e) => e.isDirectory())
       .map((e) => e.name);
   } catch {
-    process.stdout.write("No adoption backups found (.claude/.adopt-backups is empty or absent).\n");
+    process.stdout.write(
+      "No adoption backups found (.claude/.adopt-backups is empty or absent).\n",
+    );
     return;
   }
 
   if (entries.length === 0) {
-    process.stdout.write("No adoption backups found (.claude/.adopt-backups is empty).\n");
+    process.stdout.write(
+      "No adoption backups found (.claude/.adopt-backups is empty).\n",
+    );
     return;
   }
 
@@ -62,10 +68,14 @@ function main() {
     const dirAbs = path.join(backupsRoot, ts);
     const manifest = readManifest(dirAbs);
     if (!manifest) {
-      process.stdout.write("  " + ts + "  [manifest.json missing or unreadable]\n");
+      process.stdout.write(
+        "  " + ts + "  [manifest.json missing or unreadable]\n",
+      );
       continue;
     }
-    const ops = Array.isArray(manifest.operations) ? manifest.operations.length : 0;
+    const ops = Array.isArray(manifest.operations)
+      ? manifest.operations.length
+      : 0;
     const mode = manifest.mode || "?";
     const createdAt = manifest.createdAt || "?";
     const version = manifest.pluginVersion || "?";

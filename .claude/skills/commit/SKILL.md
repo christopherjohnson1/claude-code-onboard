@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Draft a commit message (teaching template — does NOT commit)
 
-> **This is an inert teaching template.** It illustrates the *pattern* for a
+> **This is an inert teaching template.** It illustrates the _pattern_ for a
 > commit workflow. It **reviews** the diff and **prints** a ready-to-run
 > `git commit` command. It **MUST NOT execute the commit itself** — the user
 > runs the printed command if and when they want to. Do not call `git commit`,
@@ -38,7 +38,7 @@ side-effecting-looking workflow you want kept on a manual leash.
    ```
 
    Common types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`.
-   Choose the type from the *nature* of the staged change (a new export →
+   Choose the type from the _nature_ of the staged change (a new export →
    `feat`; a bug correction → `fix`; a test-only change → `test`).
 
 3. **Print the exact command — do not run it.** Output the command in a fenced
@@ -56,5 +56,5 @@ side-effecting-looking workflow you want kept on a manual leash.
 This example repo demonstrates patterns without mutating a cloned repo. A real
 commit skill could legitimately run `git commit`, but shipping that in an
 example would surprise people who clone it to learn. Keeping it inert makes the
-teaching intent unambiguous: the skill shows you *how to assemble* the command,
+teaching intent unambiguous: the skill shows you _how to assemble_ the command,
 and leaves the decision to execute with the human.

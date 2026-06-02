@@ -122,21 +122,33 @@ function main() {
   try {
     plan = JSON.parse(fs.readFileSync(path.resolve(planFile), "utf8"));
   } catch (err) {
-    process.stderr.write("backup.mjs: cannot read/parse plan file: " + err.message + "\n");
+    process.stderr.write(
+      "backup.mjs: cannot read/parse plan file: " + err.message + "\n",
+    );
     process.exit(1);
   }
 
-  const mode = plan.mode === "greenfield" || plan.mode === "migrate" ? plan.mode : "migrate";
+  const mode =
+    plan.mode === "greenfield" || plan.mode === "migrate"
+      ? plan.mode
+      : "migrate";
   const sources = Array.isArray(plan.sources) ? plan.sources : [];
   const pluginVersion =
-    typeof plan.pluginVersion === "string" ? plan.pluginVersion : readPluginVersion();
+    typeof plan.pluginVersion === "string"
+      ? plan.pluginVersion
+      : readPluginVersion();
   const planOps = Array.isArray(plan.operations) ? plan.operations : [];
 
   const now = new Date();
   const adoptionId = utcTimestamp(now);
   const createdAt = now.toISOString();
 
-  const backupRoot = path.join(targetDir, ".claude", ".adopt-backups", adoptionId);
+  const backupRoot = path.join(
+    targetDir,
+    ".claude",
+    ".adopt-backups",
+    adoptionId,
+  );
   const filesRoot = path.join(backupRoot, "files");
   ensureDir(backupRoot);
 
@@ -147,7 +159,9 @@ function main() {
     if (!rel) continue;
     if (op !== "create" && op !== "modify" && op !== "delete") {
       process.stderr.write(
-        "backup.mjs: skipping operation with invalid op (" + JSON.stringify(rawOp) + ")\n",
+        "backup.mjs: skipping operation with invalid op (" +
+          JSON.stringify(rawOp) +
+          ")\n",
       );
       continue;
     }
@@ -167,7 +181,11 @@ function main() {
       } else {
         // Planned modify/delete of a file that isn't there: record but nothing to back up.
         process.stderr.write(
-          "backup.mjs: warning — planned " + op + " of missing file: " + rel + "\n",
+          "backup.mjs: warning — planned " +
+            op +
+            " of missing file: " +
+            rel +
+            "\n",
         );
       }
     }
@@ -220,7 +238,9 @@ function main() {
       {
         adoptionId,
         backupDir: toPosix(path.relative(targetDir, backupRoot)),
-        manifestPath: toPosix(path.relative(targetDir, path.join(backupRoot, "manifest.json"))),
+        manifestPath: toPosix(
+          path.relative(targetDir, path.join(backupRoot, "manifest.json")),
+        ),
         operationCount: operations.length,
       },
       null,

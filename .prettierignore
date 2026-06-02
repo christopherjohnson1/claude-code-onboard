@@ -1,0 +1,5 @@
+# Generated / non-source files Prettier should not check.
+# (node_modules and .git are ignored by Prettier automatically.)
+package-lock.json
+dist/
+coverage/

@@ -104,7 +104,7 @@ added before its plugins can install):
   /plugin install <plugin>@<marketplace>
 ```
 
-Cite the evidence paths from the scan for each signal so the user sees *why*
+Cite the evidence paths from the scan for each signal so the user sees _why_
 (e.g. "postgres — from `prisma/schema.prisma`, `package.json`").
 
 **Already installed (skipped)** — a short footnote listing any candidates that

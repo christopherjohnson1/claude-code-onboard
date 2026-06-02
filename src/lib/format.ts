@@ -24,7 +24,10 @@ export function toTitleCase(input: string): string {
  * Format an integer amount of minor currency units (e.g. cents) as a localized
  * currency string. `cents` is the smallest unit; `currency` is an ISO 4217 code.
  */
-export function formatCurrency(cents: number, currency: string = "USD"): string {
+export function formatCurrency(
+  cents: number,
+  currency: string = "USD",
+): string {
   if (!Number.isFinite(cents)) {
     throw new RangeError(`cents must be a finite number, received: ${cents}`);
   }

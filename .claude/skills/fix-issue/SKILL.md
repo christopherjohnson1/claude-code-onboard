@@ -2,7 +2,8 @@
 name: fix-issue
 description: Fixes a GitHub issue end to end given its number — fetches the issue with `gh`, implements the change, then stages and commits it. Use when the user says "fix issue 123", "work on issue #123", "resolve this issue", or hands you a GitHub issue number to address.
 argument-hint: "[issue-number]"
-allowed-tools: ["Bash(gh issue view:*)", "Bash(git add:*)", "Bash(git commit:*)"]
+allowed-tools:
+  ["Bash(gh issue view:*)", "Bash(git add:*)", "Bash(git commit:*)"]
 ---
 
 # Fix a GitHub issue
@@ -21,7 +22,7 @@ This is a worked example of two distinct argument mechanisms:
 - `$ARGUMENTS` — the literal text the user passed after `/fix-issue` (here, the
   issue number). It is substituted into this prompt verbatim.
 - `` !`gh issue view $ARGUMENTS` `` — a **preprocessing injection**. The backtick
-  prefixed with `!` runs the command *before* the model reads the prompt and
+  prefixed with `!` runs the command _before_ the model reads the prompt and
   splices its stdout into the message. That is why the issue title, body, and
   labels already appear above — you did not have to fetch them yourself.
 

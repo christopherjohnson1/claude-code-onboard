@@ -11,21 +11,21 @@ detected-sources globs (used by `scripts/detect.mjs`) and the source→standard 
 flips the run into `migrate` mode. Walks exclude `node_modules/`, `.git/`, `dist/`,
 `build/`, and `vendor/`.
 
-| Family | Globs |
-|---|---|
+| Family             | Globs                                                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------- |
 | Claude / AGENTS.md | `CLAUDE.md`, `CLAUDE.local.md`, `**/CLAUDE.md`, `AGENTS.md`, `**/AGENTS.md`, `.claude/**` |
-| Cursor | `.cursorrules`, `.cursor/rules/**/*.mdc` |
-| GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/**/*.instructions.md` |
-| Windsurf | `.windsurfrules`, `.windsurf/rules/**/*` |
-| Gemini | `GEMINI.md`, `**/GEMINI.md` |
-| Cline | `.clinerules`, `.clinerules/**/*` |
+| Cursor             | `.cursorrules`, `.cursor/rules/**/*.mdc`                                                  |
+| GitHub Copilot     | `.github/copilot-instructions.md`, `.github/instructions/**/*.instructions.md`            |
+| Windsurf           | `.windsurfrules`, `.windsurf/rules/**/*`                                                  |
+| Gemini             | `GEMINI.md`, `**/GEMINI.md`                                                               |
+| Cline              | `.clinerules`, `.clinerules/**/*`                                                         |
 
 The detector emits:
 
 ```json
 {
   "targetDir": "<abs path>",
-  "sources": [ { "family": "cursor", "path": ".cursorrules" } ],
+  "sources": [{ "family": "cursor", "path": ".cursorrules" }],
   "hasClaude": false,
   "mode": "greenfield | migrate"
 }
@@ -36,15 +36,15 @@ The detector emits:
 When migrating, classify each piece of every detected source and route it to the standard
 target below. Build a plan the user confirms before any write.
 
-| Source construct | → Standard target |
-|---|---|
-| Global / always-apply prose conventions | `CLAUDE.md` body (deduped, sectioned) |
-| Glob/path-scoped rules (Cursor `.mdc` glob+`alwaysApply:false`, Copilot `applyTo`, Windsurf glob) | `.claude/rules/<name>.md` with `paths: [<globs>]` |
-| Cursor `alwaysApply:true`, no glob | `CLAUDE.md` (or a no-`paths:` rules file) |
-| Command/tool prohibitions ("never run rm -rf", "don't touch .env") | `settings.json` `permissions.deny` + protect-files hook pattern |
-| Build/test/lint commands | `CLAUDE.md` Commands section |
-| Secret / sensitive-path mentions | `settings.json` `deny(Read(...))` |
-| Ambiguous / freeform | preserved verbatim under "Migrated notes (review)" + flagged |
+| Source construct                                                                                  | → Standard target                                               |
+| ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Global / always-apply prose conventions                                                           | `CLAUDE.md` body (deduped, sectioned)                           |
+| Glob/path-scoped rules (Cursor `.mdc` glob+`alwaysApply:false`, Copilot `applyTo`, Windsurf glob) | `.claude/rules/<name>.md` with `paths: [<globs>]`               |
+| Cursor `alwaysApply:true`, no glob                                                                | `CLAUDE.md` (or a no-`paths:` rules file)                       |
+| Command/tool prohibitions ("never run rm -rf", "don't touch .env")                                | `settings.json` `permissions.deny` + protect-files hook pattern |
+| Build/test/lint commands                                                                          | `CLAUDE.md` Commands section                                    |
+| Secret / sensitive-path mentions                                                                  | `settings.json` `deny(Read(...))`                               |
+| Ambiguous / freeform                                                                              | preserved verbatim under "Migrated notes (review)" + flagged    |
 
 ## Plan → backup interface
 
@@ -60,7 +60,7 @@ Plan shape — each operation needs only `{ path, op }`; `backup.mjs` computes
 ```json
 {
   "mode": "greenfield | migrate",
-  "sources": [ { "family": "...", "path": "..." } ],
+  "sources": [{ "family": "...", "path": "..." }],
   "pluginVersion": "0.1.0",
   "operations": [
     { "path": "CLAUDE.md", "op": "create" },

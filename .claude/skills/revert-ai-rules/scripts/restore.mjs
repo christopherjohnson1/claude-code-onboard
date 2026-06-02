@@ -78,7 +78,10 @@ function pruneEmptyDirsUpward(startAbs, stopAbs, log) {
     if (contents.length > 0) break;
     try {
       fs.rmdirSync(resolved);
-      log.push("prune-dir   " + path.relative(stop, resolved).split(path.sep).join("/"));
+      log.push(
+        "prune-dir   " +
+          path.relative(stop, resolved).split(path.sep).join("/"),
+      );
     } catch {
       break;
     }
@@ -98,7 +101,12 @@ function main() {
   }
 
   const targetDir = resolveTargetDir();
-  const backupDir = path.join(targetDir, ".claude", ".adopt-backups", timestamp);
+  const backupDir = path.join(
+    targetDir,
+    ".claude",
+    ".adopt-backups",
+    timestamp,
+  );
   const manifestPath = path.join(backupDir, "manifest.json");
 
   let manifest;
@@ -106,12 +114,18 @@ function main() {
     manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   } catch (err) {
     process.stderr.write(
-      "restore.mjs: cannot read manifest at " + manifestPath + ": " + err.message + "\n",
+      "restore.mjs: cannot read manifest at " +
+        manifestPath +
+        ": " +
+        err.message +
+        "\n",
     );
     process.exit(1);
   }
 
-  const operations = Array.isArray(manifest.operations) ? manifest.operations : [];
+  const operations = Array.isArray(manifest.operations)
+    ? manifest.operations
+    : [];
   const log = [];
   const startedAt = new Date().toISOString();
   log.push("=== restore " + timestamp + " @ " + startedAt + " ===");
@@ -150,7 +164,12 @@ function main() {
     }
     const backupAbs = path.join(backupDir, ...operation.backupPath.split("/"));
     if (!fileExists(backupAbs)) {
-      log.push("error       missing backup file " + operation.backupPath + " for " + rel);
+      log.push(
+        "error       missing backup file " +
+          operation.backupPath +
+          " for " +
+          rel,
+      );
       continue;
     }
     try {
@@ -166,9 +185,14 @@ function main() {
 
   // Append actions to revert.log.
   try {
-    fs.appendFileSync(path.join(backupDir, "revert.log"), log.join("\n") + "\n");
+    fs.appendFileSync(
+      path.join(backupDir, "revert.log"),
+      log.join("\n") + "\n",
+    );
   } catch (err) {
-    process.stderr.write("restore.mjs: could not append revert.log: " + err.message + "\n");
+    process.stderr.write(
+      "restore.mjs: could not append revert.log: " + err.message + "\n",
+    );
   }
 
   process.stdout.write(log.join("\n") + "\n");
