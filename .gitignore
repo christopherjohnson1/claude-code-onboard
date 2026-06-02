@@ -17,3 +17,6 @@ CLAUDE.local.md
 
 # Adoption-engine backup snapshots (written by /adopt-ai-rules)
 .claude/.adopt-backups/
+
+# macOS folder metadata
+.DS_Store

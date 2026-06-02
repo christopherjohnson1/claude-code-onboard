@@ -1,0 +1,44 @@
+name: CI
+
+# The repo's "verification loop" (CLAUDE.md / README) made real in CI: every push to
+# main and every pull request must pass lint, typecheck, tests, and a format check.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npx prettier --check .
+
+  # Single, stable check to require in branch protection. Green only when every
+  # matrix leg of `verify` succeeded — so the ruleset references one name
+  # (`ci-success`) instead of each per-version job (`verify (20)`, `verify (22)`).
+  ci-success:
+    name: ci-success
+    if: always()
+    needs: [verify]
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ needs.verify.result != 'success' }}
+        run: exit 1
+      - run: echo "All CI checks passed."
