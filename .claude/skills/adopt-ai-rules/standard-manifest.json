@@ -1,0 +1,31 @@
+{
+  "_comment": "Source-of-truth list of the canonical .claude configuration standard that /adopt-ai-rules installs (§6.4). The repo dogfoods exactly what it installs: these paths are resolved relative to the payload root ${CLAUDE_PLUGIN_ROOT:-$CLAUDE_PROJECT_DIR}. NEVER includes settings.local.json, CLAUDE.local.md, .adopt-backups/, node_modules, or the sample app (src/, tests/, migrations/).",
+  "schemaVersion": 1,
+  "pluginVersion": "0.1.0",
+  "payloadRoot": "${CLAUDE_PLUGIN_ROOT:-$CLAUDE_PROJECT_DIR}",
+  "payload": {
+    "files": [
+      "CLAUDE.md",
+      "CLAUDE.local.md.example",
+      ".claude/settings.json",
+      ".claude/settings.local.json.example"
+    ],
+    "directories": [
+      ".claude/rules",
+      ".claude/hooks",
+      ".claude/skills",
+      ".claude/agents",
+      ".claude/commands"
+    ]
+  },
+  "exclude": [
+    ".claude/settings.local.json",
+    "CLAUDE.local.md",
+    ".claude/.adopt-backups",
+    "node_modules",
+    "src",
+    "tests",
+    "migrations",
+    ".git"
+  ]
+}

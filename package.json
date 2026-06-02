@@ -1,0 +1,28 @@
+{
+  "name": "claude-code-architecture-example",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An exemplary repository demonstrating Claude Code project-scoped configuration: CLAUDE.md memory, settings.json permissions, hooks, skills, and subagents.",
+  "license": "MIT",
+  "author": "Chris Johnson",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^2.1.8"
+  }
+}

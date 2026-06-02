@@ -1,0 +1,27 @@
+<!--
+  Copy this file to CLAUDE.local.md (gitignored) to add personal, machine-local
+  context that should NOT be shared with the team or committed.
+
+  CLAUDE.local.md is for your local setup notes only. NEVER put secrets here —
+  no API keys, tokens, or passwords. Those belong in environment variables and
+  are denied to Claude via .claude/settings.json (Read(.env*)).
+-->
+
+# Personal notes (local only)
+
+## My environment
+
+- Local API runs on `http://localhost:8787` (I forward it from the staging box).
+- I use `pnpm` locally even though the repo standardizes on `npm` in CLAUDE.md.
+- Postgres is on port 5433 here, not the default 5432.
+
+## Scratchpad
+
+- Currently focused on the `feat/user-lookup` branch.
+- Reminder: the seed data lives in `migrations/0001_init.sql` (protected dir —
+  add a new migration instead of editing it).
+
+## Local overrides
+
+- See `.claude/settings.local.json` for my personal permission allow-list and
+  editor mode.

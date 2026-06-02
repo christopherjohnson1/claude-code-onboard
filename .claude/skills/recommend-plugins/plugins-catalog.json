@@ -1,0 +1,1231 @@
+{
+  "_comment": "Bundled curated seed for /recommend-plugins. Generated from live marketplace.json (zero fabricated names). The skill enriches from the live ~/.claude/plugins cache at runtime and suppresses already-installed plugins. Regenerate via the build step in the design spec (\u00a79.6).",
+  "schemaVersion": 1,
+  "marketplaces": {
+    "claude-plugins-official": {
+      "addCommand": "/plugin marketplace add anthropics/claude-plugins-official",
+      "repo": "anthropics/claude-plugins-official"
+    },
+    "claude-for-legal": {
+      "addCommand": "/plugin marketplace add anthropics/claude-for-legal",
+      "repo": "anthropics/claude-for-legal"
+    }
+  },
+  "strongPicks": [
+    "semgrep",
+    "context7"
+  ],
+  "signalIndex": {
+    "frontend": [
+      "chrome-devtools-mcp",
+      "frontend-design",
+      "playwright"
+    ],
+    "react-native": [
+      "expo"
+    ],
+    "terraform": [
+      "aws-core",
+      "terraform"
+    ],
+    "serverless": [
+      "aws-core",
+      "aws-serverless"
+    ],
+    "vercel": [
+      "vercel"
+    ],
+    "netlify": [
+      "netlify-skills"
+    ],
+    "cloudflare": [
+      "cloudflare"
+    ],
+    "railway": [
+      "railway"
+    ],
+    "aws": [
+      "aws-core",
+      "aws-dev-toolkit",
+      "aws-serverless",
+      "deploy-on-aws"
+    ],
+    "azure": [
+      "azure"
+    ],
+    "postgres": [
+      "alloydb",
+      "cockroachdb",
+      "neon",
+      "planetscale",
+      "prisma",
+      "supabase"
+    ],
+    "mysql": [
+      "planetscale"
+    ],
+    "mongodb": [
+      "mongodb"
+    ],
+    "redis": [
+      "redis-development"
+    ],
+    "prisma": [
+      "neon",
+      "prisma",
+      "supabase"
+    ],
+    "clickhouse": [
+      "clickhouse"
+    ],
+    "firebase": [
+      "firebase"
+    ],
+    "vector-db": [
+      "pinecone",
+      "qdrant-skills",
+      "zilliz"
+    ],
+    "openapi": [
+      "42crunch-api-security-testing",
+      "postman"
+    ],
+    "docs-site": [
+      "context7",
+      "mintlify"
+    ],
+    "playwright": [
+      "chrome-devtools-mcp",
+      "playwright"
+    ],
+    "stripe": [
+      "stripe"
+    ],
+    "payments": [
+      "mercadopago",
+      "revenuecat",
+      "stripe",
+      "sumup"
+    ],
+    "error-tracking": [
+      "sentry",
+      "sentry-cli"
+    ],
+    "monitoring": [
+      "datadog",
+      "logfire",
+      "rootly",
+      "sentry"
+    ],
+    "analytics": [
+      "amplitude",
+      "posthog"
+    ],
+    "ai-sdk": [
+      "huggingface-skills",
+      "pydantic-ai"
+    ],
+    "github": [
+      "code-review",
+      "coderabbit",
+      "github",
+      "greptile",
+      "pr-review-toolkit"
+    ],
+    "gitlab": [
+      "gitlab"
+    ],
+    "mcp-dev": [
+      "agent-sdk-dev",
+      "mcp-apps",
+      "mcp-server-dev",
+      "plugin-dev"
+    ],
+    "shopify": [
+      "shopify"
+    ],
+    "auth": [
+      "auth0",
+      "workos"
+    ],
+    "node": [
+      "typescript-lsp"
+    ],
+    "typescript": [
+      "typescript-lsp"
+    ],
+    "python": [
+      "logfire",
+      "pydantic-ai",
+      "pyright-lsp"
+    ],
+    "go": [
+      "gopls-lsp"
+    ],
+    "rust": [
+      "rust-analyzer-lsp"
+    ],
+    "java": [
+      "jdtls-lsp"
+    ],
+    "php": [
+      "laravel-boost",
+      "php-lsp"
+    ],
+    "ruby": [
+      "ruby-lsp"
+    ],
+    "csharp": [
+      "csharp-lsp"
+    ],
+    "swift": [
+      "swift-lsp"
+    ],
+    "kotlin": [
+      "kotlin-lsp"
+    ],
+    "cpp": [
+      "clangd-lsp"
+    ],
+    "lua": [
+      "lua-lsp"
+    ],
+    "legal": [
+      "ai-governance-legal",
+      "cocounsel-legal",
+      "commercial-legal",
+      "corporate-legal",
+      "employment-legal",
+      "ip-legal",
+      "law-student",
+      "legal-builder-hub",
+      "legal-clinic",
+      "litigation-legal",
+      "privacy-legal",
+      "product-legal",
+      "regulatory-legal"
+    ]
+  },
+  "plugins": [
+    {
+      "name": "42crunch-api-security-testing",
+      "marketplace": "claude-plugins-official",
+      "description": "Automate API security directly in Claude Code with 42Crunch - automatically audit OpenAPI specs, detect vulnerabilities aligned with OWASP API Security risks (including BOLA/BFLA), and apply AI-powered fixes. Designed for AI-assisted development workflows, it provides continuous guardrails through an audit->scan->remediate->validate loop, ensuring APIs meet enterprise security standards before deployment.",
+      "components": "5 skills",
+      "unique_installs": 682,
+      "signals": [
+        "openapi"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install 42crunch-api-security-testing@claude-plugins-official"
+    },
+    {
+      "name": "agent-sdk-dev",
+      "marketplace": "claude-plugins-official",
+      "description": "Development kit for working with the Claude Agent SDK",
+      "components": "2 agents, 1 command",
+      "unique_installs": 58501,
+      "signals": [
+        "mcp-dev"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install agent-sdk-dev@claude-plugins-official"
+    },
+    {
+      "name": "ai-governance-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Triages proposed AI use cases against your registry, runs impact assessments across the regimes in scope, reviews vendor AI terms for training-on-data and liability gaps, and keeps your AI policy current with practice.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install ai-governance-legal@claude-for-legal"
+    },
+    {
+      "name": "alloydb",
+      "marketplace": "claude-plugins-official",
+      "description": "Create, connect, and interact with an AlloyDB for PostgreSQL database and data.",
+      "components": "7 skills",
+      "unique_installs": 463,
+      "signals": [
+        "postgres"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install alloydb@claude-plugins-official"
+    },
+    {
+      "name": "amplitude",
+      "marketplace": "claude-plugins-official",
+      "description": "Use Amplitude as an expert analyst \u2014 instrument Amplitude, discover product opportunities, analyze charts, create dashboards, manage experiments, and understand users and accounts.",
+      "components": "26 skills, 1 MCP server",
+      "unique_installs": 1373,
+      "signals": [
+        "analytics"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install amplitude@claude-plugins-official"
+    },
+    {
+      "name": "auth0",
+      "marketplace": "claude-plugins-official",
+      "description": "Add authentication to any app with Auth0. This plugin detects your framework, scaffolds the right Auth0 SDK integration, and guides you through login, logout, sessions, and protected routes \u2014 using current SDK patterns.",
+      "components": "38 skills",
+      "unique_installs": 1848,
+      "signals": [
+        "auth"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install auth0@claude-plugins-official"
+    },
+    {
+      "name": "aws-core",
+      "marketplace": "claude-plugins-official",
+      "description": "Build, deploy, and operate applications on AWS. Skills to author infrastructure-as-code, use core services, and complete common tasks.",
+      "components": "13 skills, 1 MCP server",
+      "unique_installs": 1173,
+      "signals": [
+        "aws",
+        "serverless",
+        "terraform"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install aws-core@claude-plugins-official"
+    },
+    {
+      "name": "aws-dev-toolkit",
+      "marketplace": "claude-plugins-official",
+      "description": "AWS development toolkit \u2014 34 skills, 11 agents, and 3 MCP servers for building, migrating, and performing architecture reviews on AWS.",
+      "components": "35 skills, 11 agents, 3 MCP servers",
+      "unique_installs": 1356,
+      "signals": [
+        "aws"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install aws-dev-toolkit@claude-plugins-official"
+    },
+    {
+      "name": "aws-serverless",
+      "marketplace": "claude-plugins-official",
+      "description": "Design, build, deploy, test, and debug serverless applications with AWS Serverless services.",
+      "components": "4 skills, 1 hook, 1 MCP server",
+      "unique_installs": 6485,
+      "signals": [
+        "aws",
+        "serverless"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install aws-serverless@claude-plugins-official"
+    },
+    {
+      "name": "azure",
+      "marketplace": "claude-plugins-official",
+      "description": "Transform Claude into an Azure expert. This plugin integrates the Azure MCP server and specialized Azure skills to move beyond generic advice. It enables Claude to perform real-world tasks: listing resources, validating deployments, diagnosing infrastructure issues, and optimizing costs across 50+ Azure services.",
+      "components": "27 skills, 1 hook, 1 MCP server",
+      "unique_installs": 2996,
+      "signals": [
+        "azure"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install azure@claude-plugins-official"
+    },
+    {
+      "name": "chrome-devtools-mcp",
+      "marketplace": "claude-plugins-official",
+      "description": "Control and inspect a live Chrome browser from your coding agent. Record performance traces, analyze network requests, check console messages with source-mapped stack traces, and automate browser actions with Puppeteer.",
+      "components": "6 skills",
+      "unique_installs": 69448,
+      "signals": [
+        "frontend",
+        "playwright"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install chrome-devtools-mcp@claude-plugins-official"
+    },
+    {
+      "name": "clangd-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "C/C++ language server (clangd) for code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 24636,
+      "signals": [
+        "cpp"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install clangd-lsp@claude-plugins-official"
+    },
+    {
+      "name": "clickhouse",
+      "marketplace": "claude-plugins-official",
+      "description": "Connect Claude to your ClickHouse Cloud databases. Browse organizations, services, databases, and table schemas. Run read-only SQL queries against your data and get instant analytical answers. Monitor service backups, review billing costs, and inspect ClickPipe configurations - all through natural conversation.",
+      "components": "2 skills, 1 MCP server",
+      "unique_installs": 384,
+      "signals": [
+        "clickhouse"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install clickhouse@claude-plugins-official"
+    },
+    {
+      "name": "cloudflare",
+      "marketplace": "claude-plugins-official",
+      "description": "Skills for the Cloudflare developer platform: Workers, Durable Objects, Agents SDK, MCP servers, Wrangler CLI, and web performance.",
+      "components": "8 skills, 2 commands, 5 MCP servers",
+      "unique_installs": 8710,
+      "signals": [
+        "cloudflare"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install cloudflare@claude-plugins-official"
+    },
+    {
+      "name": "cockroachdb",
+      "marketplace": "claude-plugins-official",
+      "description": "Connect Claude Code directly to your CockroachDB clusters for hands-on database work \u2014 explore schemas, write optimized SQL, debug queries, and manage distributed database clusters. This plugin provides 14 tools across two active MCP backends (self-hosted MCP Toolbox and managed CockroachDB Cloud MCP Server), three specialized agents (DBA, Developer, Operator), 32 skills across 6 operational domains, and built-in safety hooks.",
+      "components": "33 skills, 3 agents, 2 hooks, 3 MCP servers",
+      "unique_installs": 1545,
+      "signals": [
+        "postgres"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install cockroachdb@claude-plugins-official"
+    },
+    {
+      "name": "cocounsel-legal",
+      "marketplace": "claude-for-legal",
+      "description": "CoCounsel Legal delivers comprehensive Westlaw Deep Research reports with inline, linked citations to Westlaw and Practical Law sources.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install cocounsel-legal@claude-for-legal"
+    },
+    {
+      "name": "code-review",
+      "marketplace": "claude-plugins-official",
+      "description": "Automated code review for pull requests using multiple specialized agents with confidence-based scoring to filter false positives",
+      "components": "1 command",
+      "unique_installs": 347221,
+      "signals": [
+        "github"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install code-review@claude-plugins-official"
+    },
+    {
+      "name": "coderabbit",
+      "marketplace": "claude-plugins-official",
+      "description": "Your code review partner. CodeRabbit provides external validation using a specialized AI architecture and 40+ integrated static analyzers\u2014offering a different perspective that catches bugs, security vulnerabilities, logic errors, and edge cases. Context-aware analysis via AST parsing and codegraph relationships. Automatically incorporates CLAUDE.md and project coding guidelines into reviews. Useful after writing or modifying code, before commits, when implementing complex or security-sensitive logic, or when a second opinion would increase confidence in the changes. Returns specific findings with suggested fixes that can be applied immediately. Free to use.",
+      "components": "2 skills, 1 agent, 1 command",
+      "unique_installs": 26316,
+      "signals": [
+        "github"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install coderabbit@claude-plugins-official"
+    },
+    {
+      "name": "commercial-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Reviews vendor agreements, NDAs, and SaaS subscriptions against your sales-side or purchasing-side playbook, tracks renewals and cancel-by deadlines before they're missed, routes escalations to the right approver, and translates reviews into summaries business stakeholders will actually read.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install commercial-legal@claude-for-legal"
+    },
+    {
+      "name": "context7",
+      "marketplace": "claude-plugins-official",
+      "description": "Upstash Context7 MCP server for up-to-date documentation lookup. Pull version-specific documentation and code examples directly from source repositories into your LLM context.",
+      "components": "1 MCP server",
+      "unique_installs": 348660,
+      "signals": [
+        "docs-site"
+      ],
+      "strongPick": true,
+      "installCommand": "/plugin install context7@claude-plugins-official"
+    },
+    {
+      "name": "corporate-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Runs M&A diligence at scale with cited tabular review, builds disclosure schedules and closing checklists, drafts board consents and minutes in house format, and tracks entity compliance deadlines across jurisdictions.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install corporate-legal@claude-for-legal"
+    },
+    {
+      "name": "csharp-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "C# language server for code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 36046,
+      "signals": [
+        "csharp"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install csharp-lsp@claude-plugins-official"
+    },
+    {
+      "name": "datadog",
+      "marketplace": "claude-plugins-official",
+      "description": "Use Datadog directly in Claude Code through a preconfigured Datadog MCP server. Query logs, metrics, traces, dashboards, and more through natural conversation. This plugin is in preview.",
+      "components": "3 skills, 1 MCP server",
+      "unique_installs": 2812,
+      "signals": [
+        "monitoring"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install datadog@claude-plugins-official"
+    },
+    {
+      "name": "deploy-on-aws",
+      "marketplace": "claude-plugins-official",
+      "description": "Deploy applications to AWS with architecture recommendations, cost estimates, and IaC deployment.",
+      "components": "2 skills, 1 hook, 3 MCP servers",
+      "unique_installs": 7664,
+      "signals": [
+        "aws"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install deploy-on-aws@claude-plugins-official"
+    },
+    {
+      "name": "employment-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Reviews hires and terminations for jurisdiction-specific risk flags, classifies workers against the controlling state test, tracks leave deadlines before they're missed, runs internal investigations, and drafts policies with state supplements where the law differs.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install employment-legal@claude-for-legal"
+    },
+    {
+      "name": "expo",
+      "marketplace": "claude-plugins-official",
+      "description": "Official Expo skills for building, deploying, upgrading, and debugging React Native apps with Expo. Covers UI development with Expo Router, SwiftUI and Jetpack Compose components, Tailwind CSS setup, API routes, data fetching, CI/CD workflows, App Store and Play Store deployment, SDK upgrades, DOM components, and dev client distribution.",
+      "components": "16 skills, 1 MCP server",
+      "unique_installs": 8019,
+      "signals": [
+        "react-native"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install expo@claude-plugins-official"
+    },
+    {
+      "name": "firebase",
+      "marketplace": "claude-plugins-official",
+      "description": "Google Firebase MCP integration. Manage Firestore databases, authentication, cloud functions, hosting, and storage. Build and manage your Firebase backend directly from your development workflow.",
+      "components": "1 MCP server",
+      "unique_installs": 22035,
+      "signals": [
+        "firebase"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install firebase@claude-plugins-official"
+    },
+    {
+      "name": "frontend-design",
+      "marketplace": "claude-plugins-official",
+      "description": "Create distinctive, production-grade frontend interfaces with high design quality. Generates creative, polished code that avoids generic AI aesthetics.",
+      "components": "1 skill",
+      "unique_installs": 829316,
+      "signals": [
+        "frontend"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install frontend-design@claude-plugins-official"
+    },
+    {
+      "name": "github",
+      "marketplace": "claude-plugins-official",
+      "description": "Official GitHub MCP server for repository management. Create issues, manage pull requests, review code, search repositories, and interact with GitHub's full API directly from Claude Code.",
+      "components": "1 MCP server",
+      "unique_installs": 261988,
+      "signals": [
+        "github"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install github@claude-plugins-official"
+    },
+    {
+      "name": "gitlab",
+      "marketplace": "claude-plugins-official",
+      "description": "GitLab DevOps platform integration. Manage repositories, merge requests, CI/CD pipelines, issues, and wikis. Full access to GitLab's comprehensive DevOps lifecycle tools.",
+      "components": "1 MCP server",
+      "unique_installs": 33497,
+      "signals": [
+        "gitlab"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install gitlab@claude-plugins-official"
+    },
+    {
+      "name": "gopls-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Go language server for code intelligence and refactoring",
+      "components": "1 LSP server",
+      "unique_installs": 35091,
+      "signals": [
+        "go"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install gopls-lsp@claude-plugins-official"
+    },
+    {
+      "name": "greptile",
+      "marketplace": "claude-plugins-official",
+      "description": "AI-powered codebase search and understanding. Query your repositories using natural language to find relevant code, understand dependencies, and get contextual answers about your codebase architecture.",
+      "components": "1 MCP server",
+      "unique_installs": 50108,
+      "signals": [
+        "github"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install greptile@claude-plugins-official"
+    },
+    {
+      "name": "huggingface-skills",
+      "marketplace": "claude-plugins-official",
+      "description": "Build, train, evaluate, and use open source AI models, datasets, and spaces.",
+      "components": "15 skills, 1 agent, 1 MCP server",
+      "unique_installs": 28734,
+      "signals": [
+        "ai-sdk"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install huggingface-skills@claude-plugins-official"
+    },
+    {
+      "name": "ip-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Runs first-pass trademark clearance and freedom-to-operate triage, screens invention disclosures for initial patentability, drafts and triages cease-and-desist letters and DMCA takedowns (send and respond), checks open source compliance, reviews IP clauses, and tracks registrations and renewal deadlines.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install ip-legal@claude-for-legal"
+    },
+    {
+      "name": "jdtls-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Java language server (Eclipse JDT.LS) for code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 27906,
+      "signals": [
+        "java"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install jdtls-lsp@claude-plugins-official"
+    },
+    {
+      "name": "kotlin-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Kotlin language server for code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 19959,
+      "signals": [
+        "kotlin"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install kotlin-lsp@claude-plugins-official"
+    },
+    {
+      "name": "laravel-boost",
+      "marketplace": "claude-plugins-official",
+      "description": "Laravel development toolkit MCP server. Provides intelligent assistance for Laravel applications including Artisan commands, Eloquent queries, routing, migrations, and framework-specific code generation.",
+      "components": "1 MCP server",
+      "unique_installs": 19152,
+      "signals": [
+        "php"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install laravel-boost@claude-plugins-official"
+    },
+    {
+      "name": "law-student",
+      "marketplace": "claude-for-legal",
+      "description": "Drills Socratically, briefs cases, builds outlines, runs bar prep sessions tuned to your jurisdiction, grades IRAC practice, and plans the study schedule \u2014 without ever writing it for you.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install law-student@claude-for-legal"
+    },
+    {
+      "name": "legal-builder-hub",
+      "marketplace": "claude-for-legal",
+      "description": "Finds, evaluates, and installs community legal skills \u2014 with a security review gate before anything lands in your environment.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install legal-builder-hub@claude-for-legal"
+    },
+    {
+      "name": "legal-clinic",
+      "marketplace": "claude-for-legal",
+      "description": "Sets up the clinic, onboards students, runs structured intake, tracks deadlines with malpractice-aware caution, and hands off cases at semester end \u2014 built within ABA Formal Op. 512.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install legal-clinic@claude-for-legal"
+    },
+    {
+      "name": "litigation-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Manages the litigation portfolio \u2014 matters, deadlines, holds, demands, outside counsel \u2014 and does the work: claim charts (patent and civil), chronologies, depo prep, privilege logs, brief drafting. Adapts to how you work litigation: in-house, firm, or solo.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install litigation-legal@claude-for-legal"
+    },
+    {
+      "name": "logfire",
+      "marketplace": "claude-plugins-official",
+      "description": "Add Logfire observability to Python applications with auto-instrumentation for FastAPI, httpx, asyncpg, SQLAlchemy, and more",
+      "components": "3 skills, 4 commands, 1 MCP server",
+      "unique_installs": 575,
+      "signals": [
+        "monitoring",
+        "python"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install logfire@claude-plugins-official"
+    },
+    {
+      "name": "lua-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Lua language server for code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 13370,
+      "signals": [
+        "lua"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install lua-lsp@claude-plugins-official"
+    },
+    {
+      "name": "mcp-apps",
+      "marketplace": "claude-plugins-official",
+      "description": "Skills for creating MCP Apps with the MCP Apps SDK",
+      "components": "4 skills",
+      "unique_installs": 321,
+      "signals": [
+        "mcp-dev"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install mcp-apps@claude-plugins-official"
+    },
+    {
+      "name": "mcp-server-dev",
+      "marketplace": "claude-plugins-official",
+      "description": "Skills for designing and building MCP servers that work seamlessly with Claude. Guides you through deployment models (remote HTTP, MCPB, local), tool design patterns, auth, and interactive MCP apps.",
+      "components": "3 skills",
+      "unique_installs": 18154,
+      "signals": [
+        "mcp-dev"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install mcp-server-dev@claude-plugins-official"
+    },
+    {
+      "name": "mercadopago",
+      "marketplace": "claude-plugins-official",
+      "description": "Mercado Pago full-product integration toolkit. One agent routes to four orchestration skills (mp-integrate wizard, mp-webhooks, mp-test-setup, mp-review) that pull every endpoint, payload, and snippet live from the official Mercado Pago MCP server. The MCP must always be connected \u2014 there is no offline mode.",
+      "components": "4 skills, 1 agent, 3 commands, 2 hooks, 1 MCP server",
+      "unique_installs": 285,
+      "signals": [
+        "payments"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install mercadopago@claude-plugins-official"
+    },
+    {
+      "name": "mintlify",
+      "marketplace": "claude-plugins-official",
+      "description": "Build beautiful documentation sites with Mintlify. Convert non-markdown files into properly formatted MDX pages, add and modify content with correct component use, and automate documentation updates.",
+      "components": "1 skill, 1 MCP server",
+      "unique_installs": 5360,
+      "signals": [
+        "docs-site"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install mintlify@claude-plugins-official"
+    },
+    {
+      "name": "mongodb",
+      "marketplace": "claude-plugins-official",
+      "description": "Official Claude plugin for MongoDB (MCP Server + Skills). Connect to databases, explore data, manage collections, optimize queries, generate reliable code, implement best practices, develop advanced features, and more.",
+      "components": "7 skills",
+      "unique_installs": 5330,
+      "signals": [
+        "mongodb"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install mongodb@claude-plugins-official"
+    },
+    {
+      "name": "neon",
+      "marketplace": "claude-plugins-official",
+      "description": "Manage your Neon projects and databases with the neon-postgres agent skill and the Neon MCP Server.",
+      "components": null,
+      "unique_installs": 2293,
+      "signals": [
+        "postgres",
+        "prisma"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install neon@claude-plugins-official"
+    },
+    {
+      "name": "netlify-skills",
+      "marketplace": "claude-plugins-official",
+      "description": "Netlify platform skills for Claude Code \u2014 functions, edge functions, blobs, database, image CDN, forms, config, CLI, frameworks, caching, AI gateway, and deployment.",
+      "components": "13 skills",
+      "unique_installs": 3111,
+      "signals": [
+        "netlify"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install netlify-skills@claude-plugins-official"
+    },
+    {
+      "name": "php-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "PHP language server (Intelephense) for code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 27484,
+      "signals": [
+        "php"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install php-lsp@claude-plugins-official"
+    },
+    {
+      "name": "pinecone",
+      "marketplace": "claude-plugins-official",
+      "description": "Pinecone vector database integration. Streamline your Pinecone development with powerful tools for managing vector indexes, querying data, and rapid prototyping. Use slash commands like /quickstart to generate AGENTS.md files and initialize Python projects and /query to quickly explore indexes. Access the Pinecone MCP server for creating, describing, upserting and querying indexes with Claude. Perfect for developers building semantic search, RAG applications, recommendation systems, and other vector-based applications with Pinecone.",
+      "components": "9 skills, 1 command, 1 MCP server",
+      "unique_installs": 9018,
+      "signals": [
+        "vector-db"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install pinecone@claude-plugins-official"
+    },
+    {
+      "name": "planetscale",
+      "marketplace": "claude-plugins-official",
+      "description": "An authenticated hosted MCP server that accesses your PlanetScale organizations, databases, branches, schema, and Insights data. Query against your data, surface slow queries, and get organizational and account information.",
+      "components": "1 MCP server",
+      "unique_installs": 2000,
+      "signals": [
+        "mysql",
+        "postgres"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install planetscale@claude-plugins-official"
+    },
+    {
+      "name": "playwright",
+      "marketplace": "claude-plugins-official",
+      "description": "Browser automation and end-to-end testing MCP server by Microsoft. Enables Claude to interact with web pages, take screenshots, fill forms, click elements, and perform automated browser testing workflows.",
+      "components": "1 MCP server",
+      "unique_installs": 248405,
+      "signals": [
+        "frontend",
+        "playwright"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install playwright@claude-plugins-official"
+    },
+    {
+      "name": "plugin-dev",
+      "marketplace": "claude-plugins-official",
+      "description": "Comprehensive toolkit for developing Claude Code plugins. Includes 7 expert skills covering hooks, MCP integration, commands, agents, and best practices. AI-assisted plugin creation and validation.",
+      "components": "7 skills, 3 agents, 1 command",
+      "unique_installs": 57443,
+      "signals": [
+        "mcp-dev"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install plugin-dev@claude-plugins-official"
+    },
+    {
+      "name": "posthog",
+      "marketplace": "claude-plugins-official",
+      "description": "Access PostHog analytics, feature flags, experiments, error tracking, and insights directly from Claude Code.",
+      "components": "48 skills, 1 agent, 3 commands, 2 hooks, 1 MCP server",
+      "unique_installs": 10749,
+      "signals": [
+        "analytics"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install posthog@claude-plugins-official"
+    },
+    {
+      "name": "postman",
+      "marketplace": "claude-plugins-official",
+      "description": "Full API lifecycle management for Claude Code. Sync collections, generate client code, discover APIs, run tests, create mocks, publish docs, and audit security. Powered by the Postman MCP Server.",
+      "components": "8 skills, 1 agent, 10 commands, 1 MCP server",
+      "unique_installs": 14624,
+      "signals": [
+        "openapi"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install postman@claude-plugins-official"
+    },
+    {
+      "name": "pr-review-toolkit",
+      "marketplace": "claude-plugins-official",
+      "description": "Comprehensive PR review agents specializing in comments, tests, error handling, type design, code quality, and code simplification",
+      "components": "6 agents, 1 command",
+      "unique_installs": 96663,
+      "signals": [
+        "github"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install pr-review-toolkit@claude-plugins-official"
+    },
+    {
+      "name": "prisma",
+      "marketplace": "claude-plugins-official",
+      "description": "Prisma MCP integration for Postgres database management, schema migrations, SQL queries, and connection string management. Provision Prisma Postgres databases, run migrations, and interact with your data directly.",
+      "components": "2 MCP servers",
+      "unique_installs": 5342,
+      "signals": [
+        "postgres",
+        "prisma"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install prisma@claude-plugins-official"
+    },
+    {
+      "name": "privacy-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Triages processing activities, generates PIAs, reviews DPAs as controller or processor, drafts DSAR responses within statutory timelines, and monitors policy drift against practice.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install privacy-legal@claude-for-legal"
+    },
+    {
+      "name": "product-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Reviews product launches against your risk calibration, answers 'is this a problem?' questions in minutes, checks marketing copy for claims that need substantiation, and flags upcoming launches that need legal eyes before anyone asks.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install product-legal@claude-for-legal"
+    },
+    {
+      "name": "pydantic-ai",
+      "marketplace": "claude-plugins-official",
+      "description": "Write accurate Pydantic AI code from the start. Up-to-date patterns, decision trees, and common gotchas for agents, tools, structured output, streaming, and multi-agent apps.",
+      "components": "1 skill",
+      "unique_installs": 2751,
+      "signals": [
+        "ai-sdk",
+        "python"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install pydantic-ai@claude-plugins-official"
+    },
+    {
+      "name": "pyright-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Python language server (Pyright) for type checking and code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 91225,
+      "signals": [
+        "python"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install pyright-lsp@claude-plugins-official"
+    },
+    {
+      "name": "qdrant-skills",
+      "marketplace": "claude-plugins-official",
+      "description": "Agent skills for Qdrant vector search covering scaling, performance optimization, search quality, monitoring, deployment, model migration, version upgrades, and SDK usage across Python, TypeScript, Rust, Go, .NET, and Java.",
+      "components": "8 skills",
+      "unique_installs": 551,
+      "signals": [
+        "vector-db"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install qdrant-skills@claude-plugins-official"
+    },
+    {
+      "name": "railway",
+      "marketplace": "claude-plugins-official",
+      "description": "Deploy and manage apps, databases, and infrastructure on Railway. Covers project setup, deploys, environment configuration, networking, troubleshooting, and monitoring.",
+      "components": "1 skill, 1 hook, 1 MCP server",
+      "unique_installs": 4506,
+      "signals": [
+        "railway"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install railway@claude-plugins-official"
+    },
+    {
+      "name": "redis-development",
+      "marketplace": "claude-plugins-official",
+      "description": "Redis development best practices \u2014 data structures, query engine, vector search, caching, and performance optimization",
+      "components": null,
+      "unique_installs": 392,
+      "signals": [
+        "redis"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install redis-development@claude-plugins-official"
+    },
+    {
+      "name": "regulatory-legal",
+      "marketplace": "claude-for-legal",
+      "description": "Watches regulatory feeds, diffs new rules against your policy library, tracks comment deadlines and open gaps, and writes the digest your team reads Monday morning.",
+      "components": null,
+      "unique_installs": null,
+      "signals": [
+        "legal"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install regulatory-legal@claude-for-legal"
+    },
+    {
+      "name": "revenuecat",
+      "marketplace": "claude-plugins-official",
+      "description": "Configure RevenueCat projects, apps, products, entitlements, and offerings directly from Claude Code. Manage your in-app purchase backend without leaving your development workflow.",
+      "components": null,
+      "unique_installs": 2245,
+      "signals": [
+        "payments"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install revenuecat@claude-plugins-official"
+    },
+    {
+      "name": "rootly",
+      "marketplace": "claude-plugins-official",
+      "description": "Full-lifecycle incident management: deploy safety, incident response, on-call management, and retrospectives.",
+      "components": "18 skills, 3 agents, 2 hooks, 1 MCP server",
+      "unique_installs": 114,
+      "signals": [
+        "monitoring"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install rootly@claude-plugins-official"
+    },
+    {
+      "name": "ruby-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Ruby language server for code intelligence and analysis",
+      "components": "1 LSP server",
+      "unique_installs": 6969,
+      "signals": [
+        "ruby"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install ruby-lsp@claude-plugins-official"
+    },
+    {
+      "name": "rust-analyzer-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Rust language server for code intelligence and analysis",
+      "components": "1 LSP server",
+      "unique_installs": 30220,
+      "signals": [
+        "rust"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install rust-analyzer-lsp@claude-plugins-official"
+    },
+    {
+      "name": "semgrep",
+      "marketplace": "claude-plugins-official",
+      "description": "Semgrep catches security vulnerabilities in real-time and guides Claude to write secure code from the start.",
+      "components": "1 command, 3 hooks, 1 MCP server",
+      "unique_installs": 15606,
+      "signals": [],
+      "strongPick": true,
+      "installCommand": "/plugin install semgrep@claude-plugins-official"
+    },
+    {
+      "name": "sentry",
+      "marketplace": "claude-plugins-official",
+      "description": "Sentry error monitoring integration. Access error reports, analyze stack traces, search issues by fingerprint, and debug production errors directly from your development environment.",
+      "components": "30 skills, 1 command, 1 MCP server",
+      "unique_installs": 32327,
+      "signals": [
+        "error-tracking",
+        "monitoring"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install sentry@claude-plugins-official"
+    },
+    {
+      "name": "sentry-cli",
+      "marketplace": "claude-plugins-official",
+      "description": "Skills for using the Sentry CLI to interact with Sentry from the command line",
+      "components": "1 skill",
+      "unique_installs": 283,
+      "signals": [
+        "error-tracking"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install sentry-cli@claude-plugins-official"
+    },
+    {
+      "name": "shopify",
+      "marketplace": "claude-plugins-official",
+      "description": "Shopify developer tools for Claude Code \u2014 search Shopify docs, generate and validate GraphQL, Liquid, and UI extension code",
+      "components": "1 MCP server",
+      "unique_installs": 2094,
+      "signals": [
+        "shopify"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install shopify@claude-plugins-official"
+    },
+    {
+      "name": "stripe",
+      "marketplace": "claude-plugins-official",
+      "description": "Stripe development plugin for Claude",
+      "components": "3 skills, 2 commands, 1 MCP server",
+      "unique_installs": 32282,
+      "signals": [
+        "payments",
+        "stripe"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install stripe@claude-plugins-official"
+    },
+    {
+      "name": "sumup",
+      "marketplace": "claude-plugins-official",
+      "description": "SumUp payment integrations across terminal and online checkout flows. Build Android and iOS POS apps with SumUp card readers, online checkout with server SDKs and the checkout widget, and control card readers remotely via Cloud API.",
+      "components": "1 skill, 1 MCP server",
+      "unique_installs": 1825,
+      "signals": [
+        "payments"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install sumup@claude-plugins-official"
+    },
+    {
+      "name": "supabase",
+      "marketplace": "claude-plugins-official",
+      "description": "Supabase MCP integration for database operations, authentication, storage, and real-time subscriptions. Manage your Supabase projects, run SQL queries, and interact with your backend directly.",
+      "components": "2 skills",
+      "unique_installs": 100599,
+      "signals": [
+        "postgres",
+        "prisma"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install supabase@claude-plugins-official"
+    },
+    {
+      "name": "swift-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "Swift language server (SourceKit-LSP) for code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 19804,
+      "signals": [
+        "swift"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install swift-lsp@claude-plugins-official"
+    },
+    {
+      "name": "terraform",
+      "marketplace": "claude-plugins-official",
+      "description": "The Terraform MCP Server provides seamless integration with Terraform ecosystem, enabling advanced automation and interaction capabilities for Infrastructure as Code (IaC) development.",
+      "components": "1 MCP server",
+      "unique_installs": 6579,
+      "signals": [
+        "terraform"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install terraform@claude-plugins-official"
+    },
+    {
+      "name": "typescript-lsp",
+      "marketplace": "claude-plugins-official",
+      "description": "TypeScript/JavaScript language server for enhanced code intelligence",
+      "components": "1 LSP server",
+      "unique_installs": 177136,
+      "signals": [
+        "node",
+        "typescript"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install typescript-lsp@claude-plugins-official"
+    },
+    {
+      "name": "vercel",
+      "marketplace": "claude-plugins-official",
+      "description": "Vercel deployment platform integration. Manage deployments, check build status, access logs, configure domains, and control your frontend infrastructure directly from Claude Code.",
+      "components": "26 skills, 2 hooks, 1 MCP server",
+      "unique_installs": 142095,
+      "signals": [
+        "vercel"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install vercel@claude-plugins-official"
+    },
+    {
+      "name": "workos",
+      "marketplace": "claude-plugins-official",
+      "description": "WorkOS integration skills for AuthKit, SSO, Directory Sync, RBAC, Vault, Audit Logs, migrations, and API references.",
+      "components": "2 skills",
+      "unique_installs": 227,
+      "signals": [
+        "auth"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install workos@claude-plugins-official"
+    },
+    {
+      "name": "zilliz",
+      "marketplace": "claude-plugins-official",
+      "description": "Zilliz Cloud management plugin with 14 skills covering cluster lifecycle, collection schema, vector search, index tuning, bulk import, RBAC, backups, and monitoring.",
+      "components": null,
+      "unique_installs": 397,
+      "signals": [
+        "vector-db"
+      ],
+      "strongPick": false,
+      "installCommand": "/plugin install zilliz@claude-plugins-official"
+    }
+  ]
+}
