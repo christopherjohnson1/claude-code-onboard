@@ -17,7 +17,7 @@
 #   1. $CLAUDE_EFFORT is actually populated for a UserPromptExpansion hook.
 #   2. A non-blocking `systemMessage` JSON field renders for this event.
 #   3. Whether plugin command_name arrives BARE (e.g. "commit") or NAMESPACED
-#      (e.g. "claude-code-architecture-example:commit"); we match both forms.
+#      (e.g. "claude-code-onboard:commit"); we match both forms.
 #
 # Output contract: emit a ONE-TIME nudge via the universal `systemMessage` JSON
 # field ONLY. NEVER additionalContext (unsupported on this event), NEVER

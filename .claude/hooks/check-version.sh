@@ -15,7 +15,7 @@
 # nag on uncertainty, never fail the session).
 set -uo pipefail
 
-PLUGIN_NAME="claude-code-architecture-example"
+PLUGIN_NAME="claude-code-onboard"
 
 # Minimum supported version components.
 MIN_MAJOR=2

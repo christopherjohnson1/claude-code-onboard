@@ -1,5 +1,5 @@
 {
-  "name": "claude-code-architecture-example",
+  "name": "claude-code-onboard",
   "version": "0.1.0",
   "private": true,
   "description": "An exemplary repository demonstrating Claude Code project-scoped configuration: CLAUDE.md memory, settings.json permissions, hooks, skills, and subagents.",

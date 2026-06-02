@@ -1,4 +1,4 @@
-# claude-code-architecture-example
+# claude-code-onboard
 
 An exemplary, public repository that demonstrates current (mid-2026) **Claude Code best
 practices** for project-scoped configuration — `CLAUDE.md` memory, `settings.json`
@@ -76,7 +76,7 @@ guarantee holds.
 Every entry below is a real file in this repo.
 
 ```
-claude-code-architecture-example/
+claude-code-onboard/
 ├── README.md                          # this file
 ├── LICENSE                            # MIT
 ├── CLAUDE.md                          # < 200 lines advisory memory; @imports README/package.json/docs
