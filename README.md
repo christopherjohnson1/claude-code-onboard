@@ -1,5 +1,7 @@
 # claude-code-onboard
 
+[![CI](https://github.com/christopherjohnson1/claude-code-onboard/actions/workflows/ci.yml/badge.svg)](https://github.com/christopherjohnson1/claude-code-onboard/actions/workflows/ci.yml)
+
 An exemplary, public repository that demonstrates current (mid-2026) **Claude Code best
 practices** for project-scoped configuration — `CLAUDE.md` memory, `settings.json`
 permissions, hooks, skills, and subagents, all under `.claude/`.
@@ -79,11 +81,21 @@ Every entry below is a real file in this repo.
 claude-code-onboard/
 ├── README.md                          # this file
 ├── LICENSE                            # MIT
+├── CONTRIBUTING.md                    # how to contribute: the verification loop, conventions, PR flow
+├── SECURITY.md                        # report a vulnerability; the secrets-safety stance
 ├── CLAUDE.md                          # < 200 lines advisory memory; @imports README/package.json/docs
 ├── CLAUDE.local.md.example            # personal, gitignored memory (copy to CLAUDE.local.md)
-├── .gitignore                         # node_modules, .env*, dist, settings.local.json, CLAUDE.local.md, .adopt-backups/
+├── .gitignore                         # node_modules, .env*, dist, settings.local.json, CLAUDE.local.md, .adopt-backups/, .DS_Store
+├── .prettierignore                    # generated files Prettier skips (package-lock.json, dist/, coverage/)
 ├── .mcp.json.example                  # HTTP MCP server template (copy to .mcp.json, set env)
+├── .github/
+│   ├── workflows/ci.yml               # CI: lint/typecheck/test/prettier on Node 20 & 22 → ci-success gate
+│   ├── ISSUE_TEMPLATE/                # bug_report.md, feature_request.md, config.yml
+│   ├── PULL_REQUEST_TEMPLATE.md       # PR checklist mirroring the verification loop
+│   └── dependabot.yml                 # weekly npm + github-actions updates
 ├── package.json                       # scripts: lint / test / typecheck / format
+├── package-lock.json                  # committed lockfile → reproducible `npm ci` in CI
+├── eslint.config.js                   # flat ESLint config (makes `npm run lint` real); bans default exports
 ├── tsconfig.json                      # strict TypeScript config
 ├── docs/
 │   └── git-instructions.md            # imported by CLAUDE.md (@docs/git-instructions.md)
@@ -446,7 +458,7 @@ files from `files/`, pruning now-empty directories the adoption made, and append
 
 ## Workflows
 
-These are **documented patterns**, not shipped code:
+Most are **documented patterns** rather than shipped code; the CI workflow is the exception:
 
 - **explore → plan → code → commit.** Read and understand first, write a plan, implement,
   then commit (with `/commit`, which drafts and prints — you run the command).
@@ -456,6 +468,10 @@ These are **documented patterns**, not shipped code:
 - **The verification loop.** After a change, run the [`tests/`](tests/) suite _and_ hand the
   diff to the review subagent — code is "done" only when tests pass and review is clean. This
   is why the repo ships [`tests/format.test.ts`](tests/format.test.ts): it closes the loop.
+- **Continuous integration (shipped).** [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+  runs the verification loop — `lint`, `typecheck`, `test`, `prettier --check` — on every push
+  to `main` and every PR, across Node 20 and 22. A single `ci-success` gate job is the required
+  status check protecting `main`.
 - **Headless / CI.** `claude -p "<prompt>"` runs non-interactively for CI fan-out and
   scripting.
 - **Saved dynamic workflows** are a _runtime-dependent research preview_ — documented here,
